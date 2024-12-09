@@ -4,12 +4,9 @@
 
 
 import cv2
-from picamera2 import Picamera2
 from gaze_tracking import GazeTracking
 import time
 import numpy as np
-#from openpyxl import Workbook
-#import pandas as pd
 import pyautogui
 from Commandes import Commande
 import subprocess
@@ -33,11 +30,10 @@ hauteur_nouvelle = HF*1	# nouvelle hauteur image   x2pb   x3pb   x4pb  x5pb
 ratio_horizontal = 0.0
 erreur_relative = 0.0
 
-picam2 = Picamera2()
-#FPS=1000000/40000=25
-config= picam2.create_preview_configuration(main={"format": 'RGB888', "size": (WF, HF)} , controls={"FrameDurationLimits": (40000, 40000)})
-picam2.configure(config) 
-picam2.start()
+# Initialize webcam
+cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, WF)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, HF)
 
 time.sleep(1)									# attente
 
@@ -67,7 +63,9 @@ cv2.resizeWindow("Chez Gérard", screen_width, window_height)	# retaille la fene
 
 while True:
     # Capture d'une image
-    frame = picam2.capture_array()
+    ret, frame = cap.read()
+    if not ret:
+        break
    
     # Analyse de l'image
     gaze.refresh(frame)
@@ -200,5 +198,5 @@ while True:
     if cv2.waitKey(1) == 27:
         break
    
-webcam.release()			# Liberation camera
+cap.release()			# Liberation camera
 cv2.destroyAllWindows()		# Liberation memoire
