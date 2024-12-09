@@ -1,1 +1,19 @@
+# Ignore virtual environment directory
+myenv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore temporary files
+*.swp
+*.swo
+
+# Ignore macOS specific files
 .DS_Store
+
+# Ignore other common files and directories
+*.log
+*.tmp
