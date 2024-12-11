@@ -1,7 +1,6 @@
-# mode telerupteur
-# a droite lampe centre salon
-# a gauche lampe salle a manger
-
+# Toggle switch mode
+# Right: center salon lamp
+# Left: dining room lamp
 
 import cv2
 from gaze_tracking import GazeTracking
@@ -11,192 +10,194 @@ import pyautogui
 from Commandes import Commande
 import subprocess
 
+image_width = 640  # Image width
+image_height = 480  # Image height
+relative_error = 100  # Initial relative error
+screen_width = 1920  # Screen width
+width = image_width
+height = image_height
+defined_ratios = 0  # Defined ratios for left and right boundaries: 0: none, 1: left, 2: right, 3: both
+fps_for_stable_gaze = 30  # Number of iterations to consider gaze stable (if FPS=25, duration=(1/FPS)*NbIterations=(1/25)*30=1.2 seconds)
+horizontal_ratio_list = []  # List to record horizontal ratio
+relative_error_list = []  # List to record relative error
+detected_pupils_list = []  # List to record detected pupils
+closed_eye_list = []  # List to record closed eyes
 
-WF=640	# largeur image
-HF=480	# hauteur image
-erreur_relative=100	# init
-WEcran=1920 #1600ok #1920ok
-width=WF
-height=HF
-RatiosDefinis=0		# ratio des bornes gauche et droite definis 0:aucun 1:gauche 2:droite 3:gauche et droite 
-FPSpourStabilisationRegard = 30	# Nb d'itérations pour considérer le regard stable si FPS=25 alors duree=(1/FPS)*NbIterations=(1/25)*30=1,2 seconde
-liste_horizontal_ratio=[]	# pour enregistrement ratio
-liste_erreur_relative=[]	# pour enregistrement erreur relative
-liste_pupilles_detectees=[]	# pour enregistrement detection pupilles
-liste_oeil_ferme=[]			# pour enregistrement oeil ferme
-
-largeur_nouvelle = WF*1	# nouvelle largeur image 1920pb 3200ok  x2pb  x3pb  x4pb  x5ok
-hauteur_nouvelle = HF*1	# nouvelle hauteur image   x2pb   x3pb   x4pb  x5pb
-ratio_horizontal = 0.0
-erreur_relative = 0.0
+new_width = image_width * 1  # New image width
+new_height = image_height * 1  # New image height
+horizontal_ratio = 0.0
+relative_error = 0.0
 
 # Initialize webcam
 cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, WF)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, HF)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, image_width)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, image_height)
 
-time.sleep(1)									# attente
+time.sleep(1)  # Wait
 
-RegardDroite = 0			# init
-RegardGauche = 0			# init
-commandeKNX = Commande()	# cree objet commandeKNX
-couleur_SAM = [0, 0, 0]		# init couleur noire
-couleur_centre_salon = [0, 0, 0]			# init couleur noire
-couleur_texte_SAM = [0, 255, 255]			# init couleur jaune
-couleur_texte_centre_salon = [0, 255, 255]	# init couleur jaune
-retour_etat_SaM=0
-retour_etat_centre=0
+right_gaze = 0  # Initialize right gaze
+left_gaze = 0  # Initialize left gaze
+knx_command = Commande()  # Create KNX command object
+dining_room_color = [0, 0, 0]  # Initialize black color for dining room
+center_salon_color = [0, 0, 0]  # Initialize black color for center salon
+dining_room_text_color = [0, 255, 255]  # Initialize yellow text color for dining room
+center_salon_text_color = [0, 255, 255]  # Initialize yellow text color for center salon
+dining_room_state = 0  # Initialize state return for dining room
+center_salon_state = 0  # Initialize state return for center salon
 
-NbImages = 0				# Nb images capturees
-PeriodeRafraichissementInterface = 15		# PeriodeRafraichissementInterface = 1/FPS   si FPS=30 images/s avec PeriodeRafraichissementInterface = 15 MaJ interface toutes les 500ms
+num_images = 0  # Number of captured images
+refresh_period = 15  # Refresh period for the interface (1/FPS). If FPS=30, refresh every 500ms
 
-gaze = GazeTracking()		# cree  objet gaze
+gaze = GazeTracking()  # Create gaze tracking object
 
-############## AFFICHAGE ####################   
-screen_width, screen_height = pyautogui.size()				# relever les dimensions de l'écran
-window_height = HF											# definir la hauteur de la fenêtre 
-# ~ cv2.namedWindow("Chez Gérard", cv2.WND_PROP_FULLSCREEN)		# cree une fenetre
-cv2.namedWindow("Chez Gérard", cv2.WINDOW_NORMAL)				# cree une fenetre redimensionnable
-cv2.setWindowProperty("Chez Gérard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
-cv2.resizeWindow("Chez Gérard", screen_width, window_height)	# retaille la fenetre
-############## AFFICHAGE ####################   
+############## DISPLAY ####################
+screen_width, screen_height = pyautogui.size()  # Get screen dimensions
+window_height = image_height  # Define window height
+# ~ cv2.namedWindow("Chez Gérard", cv2.WND_PROP_FULLSCREEN)  # Create a fullscreen window
+cv2.namedWindow("Chez Gérard", cv2.WINDOW_NORMAL)  # Create a resizable window
+cv2.setWindowProperty("Chez Gérard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # Set to fullscreen
+cv2.resizeWindow("Chez Gérard", screen_width, window_height)  # Resize the window
+############## DISPLAY ####################
 
 while True:
-    # Capture d'une image
+    # Capture an image
     ret, frame = cap.read()
     if not ret:
         break
-   
-    # Analyse de l'image
+
+    # Analyze the image
     gaze.refresh(frame)
-    
-	# Place croix sur pupilles
+
+    # Place cross on pupils
     frame = gaze.annotated_frame()
 
-	# Rotation image selon axe vertical pour retour utilisateur
-    frame=cv2.flip(frame,1)
-  
-    # Releve periodique etat installation et mise a jour interface graphique
-    NbImages = NbImages + 1															# incremente NbImages prises
-    if NbImages >= PeriodeRafraichissementInterface:								# si delai atteint
-		# releve etat installation
-        # retour_etat_SaM = 0  #int(subprocess.getoutput('knxtool read ip: 6/0/209'))		# releve etat lampe	SAM
-        # retour_etat_centre = 1  #int(subprocess.getoutput('knxtool read ip: 6/0/208'))	# releve etat lampe centre salon
-        # NbImages = 0																# RAZ compteur images prises
-		# MAJ etat lampe SAM
-        if retour_etat_SaM == 0:				# si eteinte
-            couleur_SAM = [0, 0, 0]				# couleur de fond noir
-            couleur_texte_SAM = [128, 128, 128]	# texte gris moyen
-        else:									# sinon
-            couleur_SAM = [0, 255, 255]			# couleur de fond jaune
-            couleur_texte_SAM = [128, 128, 128]	# texte gris moyen
-		# MAJ etat lampe salon
-        if retour_etat_centre == 0:							# si eteinte
-            couleur_centre_salon = [0, 0, 0]				# couleur de fond noir
-            couleur_texte_centre_salon = [128, 128, 128]	# texte gris moyen
-        else:												# sinon
-            couleur_centre_salon = [0, 255, 255]			# couleur de fond jaune
-            couleur_texte_centre_salon = [128, 128, 128]	# texte gris moyen
-				# (0,0,0) noir / (50,50,50) gris fonce / (128,128,128) gris moyen / (200,200,200) gris clair / (255,255,255) blanc
+    # Flip image vertically for user feedback
+    frame = cv2.flip(frame, 1)
 
-	# traitement du regard
-		# si regard a gauche
-    if gaze.is_left():         				# si regard a gauche
-        RegardDroite = 0  					# RAZ RegardDroite
-        RegardGauche = RegardGauche + 1		# incremente compteur
-        # ~ print("Nb iterations regard gauche:", RegardGauche)		# affiche info dans terminal
-        
-		# gestion envoi commande lampe SAM en mode telerupteur   
-        if RegardGauche >= 17:				# il faut maintenir le regard pendant au moins 17 iterations
-            if retour_etat_SaM == 0:		# si lampe eteinte
-                retour_etat_SaM=1
-                #commandeKNX.SAM_allumer()	# allume
+    # Periodic state check and GUI update
+    num_images += 1  # Increment captured images count
+    if num_images >= refresh_period:  # If delay reached
+        # Check installation state
+        # dining_room_state = 0  # int(subprocess.getoutput('knxtool read ip: 6/0/209'))  # Check dining room lamp state
+        # center_salon_state = 1  # int(subprocess.getoutput('knxtool read ip: 6/0/208'))  # Check center salon lamp state
+        # num_images = 0  # Reset captured images count
+        # Update dining room lamp state
+        if dining_room_state == 0:  # If off
+            dining_room_color = [0, 0, 0]  # Black background
+            dining_room_text_color = [128, 128, 128]  # Medium gray text
+        else:  # Otherwise
+            dining_room_color = [0, 255, 255]  # Yellow background
+            dining_room_text_color = [128, 128, 128]  # Medium gray text
+        # Update center salon lamp state
+        if center_salon_state == 0:  # If off
+            center_salon_color = [0, 0, 0]  # Black background
+            center_salon_text_color = [128, 128, 128]  # Medium gray text
+        else:  # Otherwise
+            center_salon_color = [0, 255, 255]  # Yellow background
+            center_salon_text_color = [128, 128, 128]  # Medium gray text
+            # (0,0,0) black / (50,50,50) dark gray / (128,128,128) medium gray / (200,200,200) light gray / (255,255,255) white
+
+    # Gaze processing
+    if gaze.is_blinking():  # If blinking
+        # Handle blinking
+        pass
+    elif gaze.is_left():  # If gaze is left
+        right_gaze = 0  # Reset right gaze
+        left_gaze += 1  # Increment left gaze count
+        # ~ print("Number of iterations looking left:", left_gaze)  # Print info in terminal
+
+        # Handle dining room lamp command in toggle switch mode
+        if left_gaze >= 17:  # Maintain gaze for at least 17 iterations
+            if dining_room_state == 0:  # If lamp is off
+                dining_room_state = 1
+                # knx_command.turn_on_dining_room()  # Turn on
             else:
-                retour_etat_SaM=0							# sinon
-                #commandeKNX.SAM_eteindre()	# eteint
-            RegardGauche = 0				# RAZ compteur 
-            
-        # si regard a droite
-    elif gaze.is_right():					# si regard a droite
-        RegardGauche = 0					# RAZ RegardGauche
-        RegardDroite = RegardDroite + 1		# incremente compteur
-        # ~ print("Nb iterations regard droite:", RegardDroite)		# affiche info dans terminal
-                               
-        # gestion envoi commande lampe centre salon en mode telerupteur   
-        if RegardDroite >= 17:					# il faut maintenir le regard pendant au moins 17 iterations
-            if retour_etat_centre == 0:			# si eteinte
-                retour_etat_centre=1
-                #commandeKNX.Centre_allumer()	# allume
+                dining_room_state = 0  # Otherwise
+                # knx_command.turn_off_dining_room()  # Turn off
+            left_gaze = 0  # Reset left gaze count
+
+    elif gaze.is_right():  # If gaze is right
+        left_gaze = 0  # Reset left gaze
+        right_gaze += 1  # Increment right gaze count
+        # ~ print("Number of iterations looking right:", right_gaze)  # Print info in terminal
+
+        # Handle center salon lamp command in toggle switch mode
+        if right_gaze >= 17:  # Maintain gaze for at least 17 iterations
+            if center_salon_state == 0:  # If lamp is off
+                center_salon_state = 1
+                # knx_command.turn_on_center_salon()  # Turn on
             else:
-                retour_etat_centre=0								# sinon
-                #commandeKNX.Centre_eteindre()	# eteint
-            RegardDroite = 0					# RAZ compteur
+                center_salon_state = 0  # Otherwise
+                # knx_command.turn_off_center_salon()  # Turn off
+            right_gaze = 0  # Reset right gaze count
 
-        # si regard au centre         
-    elif gaze.is_center():
-        # ~ print("Regard au centre")
-        RegardDroite = 0					# RAZ Regardroite
-        RegardGauche = 0					# RAZ RegardGauche
-        
-############## AFFICHAGE ####################    
-    frame_redimensionnee = cv2.resize(frame, (largeur_nouvelle, hauteur_nouvelle))
-    height, width, _ = frame_redimensionnee.shape 		# releve dimensions de l'image de la webcam
+    elif gaze.is_center():  # If gaze is center
+        # ~ print("Looking at center")
+        right_gaze = 0  # Reset right gaze
+        left_gaze = 0  # Reset left gaze
 
-    # Définir la place dispo pour les bandes
-    WDispo = WEcran - width
-    LargeurBandes = int(WDispo/2)
-    
-    # Créer une image avec des bandes de couleur sur les côtés
-    bordered_frame = np.zeros((height, WEcran, 3), dtype=np.uint8)
-		# height hauteur webcam redimensionnee
-		# largeur largeur ecran
+    ############## DISPLAY ####################
+    resized_frame = cv2.resize(frame, (new_width, new_height))
+    height, width, _ = resized_frame.shape  # Get dimensions of the resized webcam image
 
-    # Ajouter couleur commande envoyee a gauche
-    bordered_frame[:, :LargeurBandes] = couleur_SAM		# Couleur SaM
-		#  [hauteur , largeur]
-		# : toutes les lignes
-		# :LargeurBandes       les colonnes depuis le début (:) jusqu'à LargeurBandes
-	# Ajouter nom de la pièce
-    Texte = "Salle a manger"
-    Position = (160,100)
-    Police = cv2.FONT_HERSHEY_SIMPLEX
-    TaillePolice = 1
-    CouleurTexte = couleur_texte_SAM
-    EpaisseurTexte = 2
-    cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
-  
-    # Ajouter couleur commande envoyee a droite
-    bordered_frame[:, -LargeurBandes:] = couleur_centre_salon  # Couleur centre salon
-		#  [hauteur , largeur]    
-		# : toutes les lignes
-		# -LargeurBandes:       les colonnes depuis la fin (:) en remontant de LargeurBandes
-	# Ajouter nom de la pièce
-    Texte = "Centre salon"
-    Position = (1500,100)
-    Police = cv2.FONT_HERSHEY_SIMPLEX
-    TaillePolice = 1
-    CouleurTexte = couleur_texte_centre_salon
-    EpaisseurTexte = 2
-    cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
-    
-    #ADDDDDDDDDDDDDDDDDDDDD
-    Text = "Ratio :" + str(int(100*gaze.horizontal_ratio()))
-    cv2.putText(bordered_frame, Text, (400, 50), Police, TaillePolice, CouleurTexte, EpaisseurTexte)
-    
-    # Copier le flux vidéo au centre de l'image
-    bordered_frame[:, LargeurBandes:LargeurBandes + width] = frame
-		#  [hauteur , largeur]    
-		# : toutes les lignes
-		# LargeurBandes:            colonne de départ
-		# :LargeurBandes + width    colonne de fin
-    
-    # Afficher l'image
-    cv2.imshow("Chez Gérard", bordered_frame)  
-############## AFFICHAGE ####################         
-        
-    # Quitter    
+    # Define available space for the color bands
+    available_width = screen_width - width
+    band_width = int(available_width / 2)
+
+    # Create an image with color bands on the sides
+    bordered_frame = np.zeros((height, screen_width, 3), dtype=np.uint8)
+    # height: height of the resized webcam image
+    # width: screen width
+
+    # Add color for the left command
+    bordered_frame[:, :band_width] = dining_room_color  # Color for dining room
+    # [height, width]
+    # : all rows
+    # :band_width: columns from the beginning (:) to band_width
+
+    # Add the name of the room
+    text = "Dining Room"
+    position = (160, 100)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_size = 1
+    text_color = dining_room_text_color
+    text_thickness = 2
+    cv2.putText(bordered_frame, text, position, font, font_size, text_color, text_thickness)
+
+    # Add color for the right command
+    bordered_frame[:, -band_width:] = center_salon_color  # Color for center salon
+    # [height, width]
+    # : all rows
+    # -band_width:: columns from the end (:) going back by band_width
+
+    # Add the name of the room
+    text = "Center Salon"
+    position = (screen_width - 300, 100)  # Adjusted position to ensure visibility
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_size = 1
+    text_color = center_salon_text_color
+    text_thickness = 2
+    cv2.putText(bordered_frame, text, position, font, font_size, text_color, text_thickness)
+
+    # Add ratio text
+    text = "Ratio: " + str(int(100 * gaze.horizontal_ratio()))
+    text_position = (int(screen_width / 2) - 100, 50)  # Centered horizontally
+    cv2.putText(bordered_frame, text, position, font, font_size, (255, 255, 255), text_thickness)  # White color for better visibility
+
+    # Copy the video stream to the center of the image
+    bordered_frame[:, band_width:band_width + width] = frame
+    # [height, width]
+    # : all rows
+    # band_width: starting column
+    # :band_width + width: ending column
+
+    # Display the image
+    cv2.imshow("Chez Gerard", bordered_frame)
+    ############## DISPLAY ####################
+
+    # Exit
     if cv2.waitKey(1) == 27:
         break
-   
-cap.release()			# Liberation camera
-cv2.destroyAllWindows()		# Liberation memoire
+
+cap.release()  # Release the camera
+cv2.destroyAllWindows()  # Free memory
