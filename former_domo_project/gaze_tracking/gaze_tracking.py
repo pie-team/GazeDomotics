@@ -115,6 +115,37 @@ class GazeTracking(object):
             self.pupilles_detectees = 0	# le place dans attribut
             self.oeil_ferme = 0			# le place dans attribut
             return h_ratio
+        
+    def moving_average(self, values, window):
+        """Smoothen the curve using a moving average"""
+        weights = np.repeat(1.0, window) / window
+        return np.convolve(values, weights, 'valid')
+        
+    def normalize_horizontal_ratio(self):
+        """Normalizes the horizontal ratio so that left is 1, center is 0.5, and right is 0"""
+        if self.pupils_located:
+            h_ratio = self.horizontal_ratio()
+            
+            # Observed values
+            left_observed = 0.65
+            center_observed = 0.55
+            right_observed = 0.37
+            
+            # Linear transformation
+            normalized_ratio = (h_ratio - right_observed) / (left_observed - right_observed)
+            
+            # Adjust to ensure center is 0.5
+            if h_ratio > center_observed:
+                normalized_ratio = 0.5 + (normalized_ratio - 0.5) * (1 - 0.5) / (1 - center_observed)
+            else:
+                normalized_ratio = 0.5 - (0.5 - normalized_ratio) * (0.5 - 0) / (center_observed - 0)
+            
+            # Ensure the ratio is within [0, 1]
+            normalized_ratio = max(0, min(1, normalized_ratio))
+            
+            return normalized_ratio
+        else:
+            return 0.5
             
     def vertical_ratio(self):
         """Returns a number between 0.0 and 1.0 that indicates the
