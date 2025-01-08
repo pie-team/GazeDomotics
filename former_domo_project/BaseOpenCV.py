@@ -4,13 +4,13 @@
 
 
 import cv2
-from picamera2 import Picamera2
+#from picamera2 import Picamera2
 from gaze_tracking import GazeTracking
 import time
 import numpy as np
 #from openpyxl import Workbook
 #import pandas as pd
-import pyautogui
+#import pyautogui
 from Commandes import Commande
 import subprocess
 
@@ -33,12 +33,12 @@ hauteur_nouvelle = HF*1	# nouvelle hauteur image   x2pb   x3pb   x4pb  x5pb
 ratio_horizontal = 0.0
 erreur_relative = 0.0
 
-picam2 = Picamera2()
-#FPS=1000000/40000=25
-config= picam2.create_preview_configuration(main={"format": 'RGB888', "size": (WF, HF)} , controls={"FrameDurationLimits": (40000, 40000)})
-picam2.configure(config) 
-picam2.start()
-
+# picam2 = Picamera2()
+# #FPS=1000000/40000=25
+# config= picam2.create_preview_configuration(main={"format": 'RGB888', "size": (WF, HF)} , controls={"FrameDurationLimits": (40000, 40000)})
+# picam2.configure(config) 
+# picam2.start()
+picam2=cv2.VideoCapture(0)
 time.sleep(1)									# attente
 
 RegardDroite = 0			# init
@@ -57,7 +57,7 @@ PeriodeRafraichissementInterface = 15		# PeriodeRafraichissementInterface = 1/FP
 gaze = GazeTracking()		# cree  objet gaze
 
 ############## AFFICHAGE ####################   
-screen_width, screen_height = pyautogui.size()				# relever les dimensions de l'écran
+screen_width, screen_height = 1920, 1200				# relever les dimensions de l'écran
 window_height = HF											# definir la hauteur de la fenêtre 
 # ~ cv2.namedWindow("Chez Gérard", cv2.WND_PROP_FULLSCREEN)		# cree une fenetre
 cv2.namedWindow("Chez Gérard", cv2.WINDOW_NORMAL)				# cree une fenetre redimensionnable
@@ -67,7 +67,7 @@ cv2.resizeWindow("Chez Gérard", screen_width, window_height)	# retaille la fene
 
 while True:
     # Capture d'une image
-    frame = picam2.capture_array()
+    _, frame = picam2.read()
    
     # Analyse de l'image
     gaze.refresh(frame)
@@ -90,14 +90,14 @@ while True:
             couleur_SAM = [0, 0, 0]				# couleur de fond noir
             couleur_texte_SAM = [128, 128, 128]	# texte gris moyen
         else:									# sinon
-            couleur_SAM = [0, 255, 255]			# couleur de fond jaune
+            couleur_SAM = [0, 50, 0]			# couleur de fond jaune
             couleur_texte_SAM = [128, 128, 128]	# texte gris moyen
 		# MAJ etat lampe salon
         if retour_etat_centre == 0:							# si eteinte
             couleur_centre_salon = [0, 0, 0]				# couleur de fond noir
             couleur_texte_centre_salon = [128, 128, 128]	# texte gris moyen
         else:												# sinon
-            couleur_centre_salon = [0, 255, 255]			# couleur de fond jaune
+            couleur_centre_salon = [0, 50, 0]			# couleur de fond jaune
             couleur_texte_centre_salon = [128, 128, 128]	# texte gris moyen
 				# (0,0,0) noir / (50,50,50) gris fonce / (128,128,128) gris moyen / (200,200,200) gris clair / (255,255,255) blanc
 

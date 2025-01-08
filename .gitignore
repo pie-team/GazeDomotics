@@ -17,3 +17,6 @@ __pycache__/
 # Ignore other common files and directories
 *.log
 *.tmp
+
+# Ignore large neuronal networks
+*.dat

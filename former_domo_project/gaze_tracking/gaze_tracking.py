@@ -131,12 +131,12 @@ class GazeTracking(object):
     def is_right(self):
         """Returns true if the user is looking to the right"""
         if self.pupils_located:
-            return self.horizontal_ratio() <= 0.55 #0.48 #0.45	# OK voir matlab regard6
+            return self.horizontal_ratio() <= 0.45 #0.48 #0.45	# OK voir matlab regard6
 
     def is_left(self):
         """Returns true if the user is looking to the left"""
         if self.pupils_located:
-            return self.horizontal_ratio() >= 0.65 #0.57 #0.6  # OK voir matlab regard6
+            return self.horizontal_ratio() >= 0.57 #0.57 #0.6  # OK voir matlab regard6
 
     def is_center(self):
         """Returns true if the user is looking to the center"""
