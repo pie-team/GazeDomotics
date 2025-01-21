@@ -4,7 +4,7 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "opengaze/opengaze.hpp"
+#include "./opengaze.hpp"
 
 using namespace std;
 using namespace cv;

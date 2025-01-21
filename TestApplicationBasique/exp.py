@@ -23,8 +23,8 @@ parser.add_argument('--axes', type=str, default='yes', help='axes instead of poi
 args=parser.parse_args()
 
 # Paramètres image
-WF=640	# largeur image
-HF=480	# hauteur image
+WF=1056	# largeur image
+HF=800	# hauteur image
 erreur_relative=100	# init
 WEcran=1920 #1600ok #1920ok
 
@@ -38,6 +38,12 @@ liste_vertical_ratio=[]	# pour enregistrement ratio
 liste_erreur_relative=[]	# pour enregistrement erreur relative
 liste_temps=[]              # pour enregistrement de t
 
+y_h=19
+y_b=HF-20
+y_c=HF//2
+x_g=19
+x_d=WF-20
+x_c=WF//2
 
 ratio_horizontal = 0.0
 erreur_relative = 0.0
@@ -73,25 +79,25 @@ screen_width, screen_height = pyautogui.size()				# relever les dimensions de l'
 										
 # ~ cv2.namedWindow("Chez Gérard", cv2.WND_PROP_FULLSCREEN)		# cree une fenetre
 cv2.namedWindow("Test", cv2.WINDOW_NORMAL)				# cree une fenetre redimensionnable
-cv2.setWindowProperty("Test", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
-cv2.resizeWindow("Test", screen_width, screen_height)	# retaille la fenetre
+#cv2.setWindowProperty("Test", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
+cv2.resizeWindow("Test", WF, HF)	# retaille la fenetre
 
 # Paramètres constants de textes et couleurs
 Texte = "+"
 if args.point_pos=='mid':
-    Position_c = (WEcran//2,480)
-    Position_g = (20,480)
-    Position_d = (WEcran-22,480)
+    Position_c = (x_c, y_c)
+    Position_g = (x_g,y_c)
+    Position_d = (x_d, y_c)
 
 elif args.point_pos=='up':
-    Position_c = (WEcran//2,50)
-    Position_g = (20,50)
-    Position_d = (WEcran-22,50)
+    Position_c = (x_c-1, y_h)
+    Position_g = (x_g, y_h)
+    Position_d = (x_d, y_h)
 
 elif args.point_pos=='down':
-    Position_c = (WEcran//2,940)
-    Position_g = (20,940)
-    Position_d = (WEcran-22,940)   
+    Position_c = (x_c,y_b)
+    Position_g = (x_g,y_b)
+    Position_d = (x_d,y_b)   
 
 Police = cv2.FONT_HERSHEY_SIMPLEX
 TaillePolice = 1
@@ -159,15 +165,15 @@ while True:
         Regard="centre"					# RAZ RegardGauche
     """
 ############## AFFICHAGE ####################    
-    frame_redimensionnee = cv2.resize(frame, (WF, HF))
+    frame_redimensionnee = cv2.resize(frame, (WF//2, HF//2))
     height, width, _ = frame_redimensionnee.shape 		# releve dimensions de l'image de la webcam
    
     # Définir la place dispo pour les bandes
-    WDispo = WEcran - width
+    WDispo = WF - width
     LargeurBandes = int(WDispo/2)
     
     # Créer une image avec des bandes de couleur sur les côtés
-    bordered_frame = np.zeros((2*height, WEcran, 3), dtype=np.uint8)
+    bordered_frame = np.zeros((HF, WF, 3), dtype=np.uint8)
 		# height hauteur webcam redimensionnee
 		# largeur largeur ecran
 
@@ -214,30 +220,30 @@ while True:
         # point central
         if t<=1*periode:
             marker_hg=t
-            Position_c=(WEcran//2, 480)
+            Position_c=(x_c, y_c)
             cv2.putText(bordered_frame, Texte, Position_c, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
         # point haut gauche
         if t>1*periode and t<=2*periode:
             marker_bg=t
-            Position_hg=(20,50)
+            Position_hg=(x_g, y_h)
             cv2.putText(bordered_frame, Texte, Position_hg, Police, TaillePolice, CouleurTexte, EpaisseurTexte) 
 
         # point de bas gauche
         if t>2*periode and t<=3*periode:
             marker_bd=t
-            Position_bg=(20,940)
+            Position_bg=(x_g, y_b)
             cv2.putText(bordered_frame, Texte, Position_bg, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
         # point bas droit
         if t>3*periode and t<=4*periode:
             marker_hd=t
-            Position_bd=(WEcran-22, 940)
+            Position_bd=(x_d, y_b)
             cv2.putText(bordered_frame, Texte, Position_bd, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
         
         # point haut droit
         if t>4*periode:
-            Position_hd=(WEcran-22, 50)
+            Position_hd=(x_d, y_h)
             cv2.putText(bordered_frame, Texte, Position_hd, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
         if t>5*periode:
@@ -246,7 +252,7 @@ while True:
     if args.video=='yes':
 
         # Copier le flux vidéo au centre de l'image
-        bordered_frame[height-1:2*height-1, LargeurBandes:LargeurBandes + width] = frame
+        bordered_frame[HF//2-1:HF-1, LargeurBandes:LargeurBandes + width] = frame
             #  [hauteur , largeur]    
             # : toutes les lignes
             # LargeurBandes:            colonne de départ
@@ -255,7 +261,7 @@ while True:
 
     #Ajouter le chrono
     Chrono = str(int(100*t)/100)
-    Position =(LargeurBandes+width//2,60)
+    Position =(WF//2, y_h+15)
     
     Police = cv2.FONT_HERSHEY_SIMPLEX
     TaillePolice = 1
@@ -266,7 +272,7 @@ while True:
 
     #Ajouter le ratio 
     ratio_showed = str(int(gaze.horizontal_ratio()*100)/100)
-    Position =(WEcran//2,150)
+    Position =(WF//2,y_h+25)
     Police = cv2.FONT_HERSHEY_SIMPLEX
     TaillePolice = 1
     CouleurTexte = (255,255,255)

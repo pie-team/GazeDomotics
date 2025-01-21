@@ -165,11 +165,11 @@ class GazeTracking(object):
         return frame
         
         
-'''
-Ajout du calcul de l'écart type sur les 10 dernières positions du regard pour calculer le rayon du cercle du regard
-Cercle grand = regard pas stable
-cercle petit = regard stable
-'''
+    '''
+    Ajout du calcul de l'écart type sur les 10 dernières positions du regard pour calculer le rayon du cercle du regard
+    Cercle grand = regard pas stable
+    cercle petit = regard stable
+    '''
 
     def ajout_ratio(self, ratio_entrant):
         self.FIFO_ratio.append(ratio_entrant)			# pousse nouveau ratio dans FIFO
