@@ -2,57 +2,78 @@
 
 # Gaze data analyser for OpenFace csv output
 
+import time
 import numpy as np
 import pandas as pd
 import os
 import cv2
 from Commandes import Commande
 
+
 WF=640	# largeur image
 HF=480	# hauteur image
-erreur_relative=100	# init
-WEcran=1920 #1600ok #1920ok
 width=WF
 height=HF
-RatiosDefinis=0		# ratio des bornes gauche et droite definis 0:aucun 1:gauche 2:droite 3:gauche et droite 
-FPSpourStabilisationRegard = 30	# Nb d'itérations pour considérer le regard stable si FPS=25 alors duree=(1/FPS)*NbIterations=(1/25)*30=1,2 seconde
-liste_horizontal_ratio=[]	# pour enregistrement ratio
-liste_erreur_relative=[]	# pour enregistrement erreur relative
-liste_pupilles_detectees=[]	# pour enregistrement detection pupilles
-liste_oeil_ferme=[]			# pour enregistrement oeil ferme
-
 largeur_nouvelle = WF*1	# nouvelle largeur image 1920pb 3200ok  x2pb  x3pb  x4pb  x5ok
 hauteur_nouvelle = HF*1	# nouvelle hauteur image   x2pb   x3pb   x4pb  x5pb
-ratio_horizontal = 0.0
-erreur_relative = 0.0
-
 
 RegardDroite = 0			# init
 RegardGauche = 0			# init
+RegardHaut = 0				# init
+RegardBas = 0				# init
 commandeKNX = Commande()	# cree objet commandeKNX
 couleur_SAM = [0, 0, 0]		# init couleur noire
 couleur_centre_salon = [0, 0, 0]			# init couleur noire
+couleur_chambre = [0, 0, 0]			# init couleur noire
+couleur_toilettes = [0, 0, 0]			# init couleur noire
 couleur_texte_SAM = [0, 255, 255]			# init couleur jaune
 couleur_texte_centre_salon = [0, 255, 255]	# init couleur jaune
+couleur_texte_toilettes = [0, 255, 255]	# init couleur jaune
+couleur_texte_chambre = [0, 255, 255]		# init couleur jaune
 retour_etat_SaM=0
 retour_etat_centre=0
+retour_etat_toilettes=0
+retour_etat_chambre=0
 
 NbImages = 0				# Nb images capturees
-PeriodeRafraichissementInterface = 15		# PeriodeRafraichissementInterface = 1/FPS   si FPS=30 images/s avec PeriodeRafraichissementInterface = 15 MaJ interface toutes les 500ms
+PeriodeRafraichissementInterface = 10		# PeriodeRafraichissementInterface = 1/FPS   si FPS=30 images/s avec PeriodeRafraichissementInterface = 15 MaJ interface toutes les 500ms
 
 
 ############## AFFICHAGE ####################   
 screen_width, screen_height = 1920, 1200 # relever les dimensions de l'écran
-window_height = HF											# definir la hauteur de la fenêtre 
 # ~ cv2.namedWindow("Chez Gérard", cv2.WND_PROP_FULLSCREEN)		# cree une fenetre
 cv2.namedWindow("Chez Gérard", cv2.WINDOW_NORMAL)				# cree une fenetre redimensionnable
 cv2.setWindowProperty("Chez Gérard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
-cv2.resizeWindow("Chez Gérard", screen_width, window_height)	# retaille la fenetre
+cv2.resizeWindow("Chez Gérard", screen_width, screen_height)	# retaille la fenetre
+
+
+centre_img = (int(screen_width/2), int(screen_height/2))		# centre de l'image
+# Créer une image vide
+frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
+cv2.putText(frame, "Regardez la croix qui va apparaître", centre_img, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+
+time.sleep(3)
+
+frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
+cv2.putText(frame, "+", centre_img, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+
+data = pd.read_csv("./Data_OpenFace/Test.csv")
+
+while data[['timestamp']].tail(1).values[0] < 10 :
+    print("Calibration en cours")
+    data = pd.read_csv("./Data_OpenFace/Test.csv")
+
+calibration_data = data[data["timestamp"]<10]
+calibration_data = calibration_data[['gaze_angle_x', 'gaze_angle_y',]]
+calibration_data = calibration_data.mean()
+
+
 
 while True :
     data = pd.read_csv("./Data_OpenFace/Test.csv")
     gaze_data = data[['gaze_angle_x', 'gaze_angle_y']]
     gaze_data = gaze_data.tail(1)
+    gaze_data = gaze_data - np.asarray([calibration_data['gaze_angle_x'], calibration_data['gaze_angle_y']])
 
     # Releve periodique etat installation et mise a jour interface graphique
     NbImages = NbImages + 1															# incremente NbImages prises
@@ -125,20 +146,23 @@ while True :
     # Définir la place dispo pour les bandes
     WDispo = screen_width - width
     LargeurBandes = int(WDispo/2)
+
+    HDispo = screen_height - height
+    HauteurBandes = int(HDispo/2)
     
     # Créer une image avec des bandes de couleur sur les côtés
-    bordered_frame = np.zeros((height, screen_width, 3), dtype=np.uint8)
+    bordered_frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
 		# height hauteur webcam redimensionnee
 		# largeur largeur ecran
 
     # Ajouter couleur commande envoyee a gauche
-    bordered_frame[:, :LargeurBandes] = couleur_SAM		# Couleur SaM
+    bordered_frame[HauteurBandes:screen_height-HauteurBandes, :LargeurBandes] = couleur_SAM		# Couleur SaM
 		#  [hauteur , largeur]
 		# : toutes les lignes
 		# :LargeurBandes       les colonnes depuis le début (:) jusqu'à LargeurBandes
 	# Ajouter nom de la pièce
     Texte = "Salle a manger"
-    Position = (160,100)
+    Position = (160,600)
     Police = cv2.FONT_HERSHEY_SIMPLEX
     TaillePolice = 1
     CouleurTexte = couleur_texte_SAM
@@ -146,21 +170,49 @@ while True :
     cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
   
     # Ajouter couleur commande envoyee a droite
-    bordered_frame[:, -LargeurBandes:] = couleur_centre_salon  # Couleur centre salon
+    bordered_frame[HauteurBandes:screen_height-HauteurBandes, -LargeurBandes:] = couleur_centre_salon  # Couleur centre salon
 		#  [hauteur , largeur]    
 		# : toutes les lignes
 		# -LargeurBandes:       les colonnes depuis la fin (:) en remontant de LargeurBandes
 	# Ajouter nom de la pièce
     Texte = "Centre salon"
-    Position = (1500,100)
+    Position = (1500,600)
     Police = cv2.FONT_HERSHEY_SIMPLEX
     TaillePolice = 1
     CouleurTexte = couleur_texte_centre_salon
     EpaisseurTexte = 2
     cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
+    # Ajouter couleur commande envoyee en haut
+    bordered_frame[:HauteurBandes, LargeurBandes:screen_width-LargeurBandes] = couleur_SAM		# Couleur SaM
+		#  [hauteur , largeur]
+		# : toutes les lignes
+		# :HauteurBandes       les colonnes depuis le début (:) jusqu'à HauteurBandes
+	# Ajouter nom de la pièce
+    Texte = "Toilettes"
+    Position = (800,50)
+    Police = cv2.FONT_HERSHEY_SIMPLEX
+    TaillePolice = 1
+    CouleurTexte = couleur_texte_SAM
+    EpaisseurTexte = 2
+    cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
+
+    # Ajouter couleur commande envoyee en bas
+    bordered_frame[-HauteurBandes:, LargeurBandes:screen_width-LargeurBandes] = couleur_SAM		# Couleur SaM
+		#  [hauteur , largeur]
+		# : toutes les lignes
+		# :HauteurBandes      les colonnes depuis la fin (:) en remontant de HauteurBandes
+	# Ajouter nom de la pièce
+    Texte = "Chambre"
+    Position = (800,1100)
+    Police = cv2.FONT_HERSHEY_SIMPLEX
+    TaillePolice = 1
+    CouleurTexte = couleur_texte_SAM
+    EpaisseurTexte = 2
+    cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
+
     # Copier le flux vidéo au centre de l'image
-    bordered_frame[:, LargeurBandes:LargeurBandes + width] = frame
+    bordered_frame[HauteurBandes:HauteurBandes + height, LargeurBandes:LargeurBandes + width] = frame
 		#  [hauteur , largeur]    
 		# : toutes les lignes
 		# LargeurBandes:            colonne de départ

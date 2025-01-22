@@ -1,1 +1,1 @@
-./GazeDomotics/EyeTrackingModels/OpenFace/build/bin/FeatureExtraction -device 0 -gaze -out_dir ./Data_OpenFace -of Test.csv
+../EyeTrackingModels/OpenFace/build/bin/FeatureExtraction -device 0 -gaze -out_dir ./Data_OpenFace -of Test.csv
