@@ -44,6 +44,18 @@ def process_image():
         return jsonify({'csv_path': output_csv}), 200
     else:
         return jsonify({'error': 'CSV file not generated'}), 500
+    
+@app.route('/test', methods=['POST'])
+def test():
+    #os.environ['TEST_VARIABLE'] = '42'
+    try:
+        result = subprocess.run([
+            'pwd'
+        ], capture_output=True, text=True, check=True)
+        return jsonify({'pwd': result.stdout.strip()}), 200
+    except subprocess.CalledProcessError as e:
+        return jsonify({'error': 'Error during environment variable test', 'details': str(e)}), 500
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8080)

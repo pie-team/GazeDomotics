@@ -162,7 +162,7 @@ while True:
         right_gaze_count = 0  # Reset right gaze
         left_gaze_count = 0  # Reset left gaze
 
-    #<<<<<<<<<<<<<<<<<<< DISPLAY <<<<<<<<<<<<<<<<<<<
+    #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< DISPLAY <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     resized_frame = cv2.resize(frame, (new_width, new_height))
     height, width, _ = resized_frame.shape  # Get dimensions of the resized webcam image
 
@@ -226,11 +226,11 @@ while True:
     thickness = 6
     cv2.circle(bordered_frame, (int(marker_position_x), int(IMAGE_HEIGHT / 2)),
                 int(marker_diameter), GREEN_COLOR, thickness)
-    #>>>>>>>>>>>>>>>>>>  CREATION OF MARKERS  >>>>>>>>>>>>>>>>>>
+    #>>>>>>>>>>>>>>>>>>>>>>>>>  CREATION OF MARKERS  >>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     # Display the image
     cv2.imshow("Chez Gerard", bordered_frame)
-    #>>>>>>>>>>>>>>>>>> DISPLAY >>>>>>>>>>>>>>>>>>
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DISPLAY >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     # Exit
     if cv2.waitKey(1) == ESC_KEY:
