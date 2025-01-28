@@ -33,6 +33,7 @@ EpaisseurTexte = 2
 Police = cv2.FONT_HERSHEY_SIMPLEX
 TaillePolice = 1
 frame_counter = 0
+delay = 10
 
 
 
@@ -121,9 +122,9 @@ if __name__ == "__main__":
         gaze_data = gaze_data.tail(1)
         gaze_data = gaze_data - np.asarray([calibration_data['gaze_angle_x'], calibration_data['gaze_angle_y']])
 
-        if GazeIsRight(gaze_data, 0.065):
+        if GazeIsRight(gaze_data, 0.06):
             right_counter += 1
-            if right_counter >= 15:
+            if right_counter >= delay:
                 right_counter = 0
                 if retour_etat_droite == 0:
                     retour_etat_droite = 1
@@ -132,25 +133,25 @@ if __name__ == "__main__":
         
         if GazeIsLeft(gaze_data, 0.06):
             left_counter += 1
-            if left_counter >= 15:
+            if left_counter >= delay:
                 left_counter = 0
                 if retour_etat_gauche == 0:
                     retour_etat_gauche = 1
                 else :
                     retour_etat_gauche = 0
         
-        if GazeIsUp(gaze_data, 0.06):
+        if GazeIsUp(gaze_data, 0.1):
             up_counter += 1
-            if up_counter >= 15:
+            if up_counter >= delay:
                 up_counter = 0
                 if retour_etat_haut == 0:
                     retour_etat_haut = 1
                 else :
                     retour_etat_haut = 0
         
-        if GazeIsDown(gaze_data, 0.06):
+        if GazeIsDown(gaze_data, 0.1):
             down_counter += 1
-            if down_counter >= 15:
+            if down_counter >= delay:
                 down_counter = 0
                 if retour_etat_bas == 0:
                     retour_etat_bas = 1
@@ -189,6 +190,10 @@ if __name__ == "__main__":
 
         frame = cv2.imread("2025-01-22-121530.jpg")
         frame_redimensionnee = cv2.resize(frame, (screen_width, screen_height))
+        # Create a window and display the image
+        cv2.namedWindow("Chez Gerard", cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty("Chez Gerard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
+        cv2.imshow("Chez Gerard", frame_redimensionnee)
 
         ### Définir la place dispo pour les bandes
         WDispo = screen_width - width_cam

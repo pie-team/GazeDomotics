@@ -12,13 +12,13 @@ data = pd.read_csv("./Data_OpenFace/Test.csv")
 gaze_data = data[['gaze_angle_x', 'gaze_angle_y', 'timestamp']]
 
 # Rolling mean to reduce noise
-calibration_data = gaze_data[gaze_data["timestamp"]<10]
-calibration_data = calibration_data[['gaze_angle_x', 'gaze_angle_y',]]
-calibration_data = calibration_data.mean()
+# calibration_data = gaze_data[gaze_data["timestamp"]<10]
+# calibration_data = calibration_data[['gaze_angle_x', 'gaze_angle_y',]]
+# calibration_data = calibration_data.mean()
 
 gaze_data = gaze_data[['gaze_angle_x', 'gaze_angle_y']]
-gaze_data['gaze_angle_x'] = gaze_data['gaze_angle_x'] - np.asarray([calibration_data['gaze_angle_x'] for i in range(gaze_data['gaze_angle_x'].shape[0])])
-gaze_data['gaze_angle_y'] = gaze_data['gaze_angle_y'] - np.asarray([calibration_data['gaze_angle_y'] for i in range(gaze_data['gaze_angle_y'].shape[0])])
+# gaze_data['gaze_angle_x'] = gaze_data['gaze_angle_x'] - np.asarray([calibration_data['gaze_angle_x'] for i in range(gaze_data['gaze_angle_x'].shape[0])])
+# gaze_data['gaze_angle_y'] = gaze_data['gaze_angle_y'] - np.asarray([calibration_data['gaze_angle_y'] for i in range(gaze_data['gaze_angle_y'].shape[0])])
 
 gaze_data = gaze_data.rolling(10).mean()
 
