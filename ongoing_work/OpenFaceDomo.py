@@ -8,6 +8,8 @@ import pandas as pd
 import os
 import cv2
 from Commandes import Commande
+import subprocess as sp
+import multiprocessing as mp
 
 
 WF=640	# largeur image
@@ -39,34 +41,99 @@ NbImages = 0				# Nb images capturees
 PeriodeRafraichissementInterface = 10		# PeriodeRafraichissementInterface = 1/FPS   si FPS=30 images/s avec PeriodeRafraichissementInterface = 15 MaJ interface toutes les 500ms
 
 
-############## AFFICHAGE ####################   
-screen_width, screen_height = 1920, 1200 # relever les dimensions de l'écran
-# ~ cv2.namedWindow("Chez Gérard", cv2.WND_PROP_FULLSCREEN)		# cree une fenetre
-cv2.namedWindow("Chez Gérard", cv2.WINDOW_NORMAL)				# cree une fenetre redimensionnable
+# Screen dimensions
+screen_width, screen_height = 1920, 1200
+
+# Create a black image
+frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
+
+# Define the text and its properties
+text = "Regardez la croix qui va apparaitre"
+font = cv2.FONT_HERSHEY_SIMPLEX
+font_scale = 1
+color = (128, 128, 128)  # Grey color
+thickness = 2
+text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
+text_x = (frame.shape[1] - text_size[0]) // 2
+text_y = (frame.shape[0] + text_size[1]) // 2
+
+# Put the text on the image
+cv2.putText(frame, text, (text_x, text_y), font, font_scale, color, thickness)
+
+# Create a window and display the image
+cv2.namedWindow("Chez Gérard", cv2.WINDOW_NORMAL)
 cv2.setWindowProperty("Chez Gérard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
-cv2.resizeWindow("Chez Gérard", screen_width, screen_height)	# retaille la fenetre
+cv2.imshow("Chez Gérard", frame)
+
+# Wait for 3 seconds
+cv2.waitKey(3000)
+
+# Close the window
+cv2.destroyAllWindows()
 
 
-centre_img = (int(screen_width/2), int(screen_height/2))		# centre de l'image
-# Créer une image vide
+# ############## AFFICHAGE ####################   
+
+# Create a black image
 frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
-cv2.putText(frame, "Regardez la croix qui va apparaître", centre_img, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
 
-time.sleep(3)
+# Define the text and its properties
+text = "+"
+font = cv2.FONT_HERSHEY_SIMPLEX
+font_scale = 1
+color = (128, 128, 128)  # Grey color
+thickness = 2
+text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
+text_x = (frame.shape[1] - text_size[0]) // 2
+text_y = (frame.shape[0] + text_size[1]) // 2
 
-frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
-cv2.putText(frame, "+", centre_img, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+# Put the text on the image
+cv2.putText(frame, text, (text_x, text_y), font, font_scale, color, thickness)
 
-data = pd.read_csv("./Data_OpenFace/Test.csv")
+# Create a window and display the image
+cv2.namedWindow("Chez Gérard", cv2.WINDOW_NORMAL)
+cv2.setWindowProperty("Chez Gérard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
+cv2.imshow("Chez Gérard", frame)
 
-while data[['timestamp']].tail(1).values[0] < 10 :
-    print("Calibration en cours")
-    data = pd.read_csv("./Data_OpenFace/Test.csv")
+pool = mp.Pool(2)
+OpenFace = pool.map_async(sp.call, ['./OpenFace_runner.sh'])
 
-calibration_data = data[data["timestamp"]<10]
+# Wait for 10 seconds
+cv2.waitKey(10500)
+
+# Close the window
+cv2.destroyAllWindows()
+
+calibration_data = pd.read_csv("./Data_OpenFace/Test.csv")
 calibration_data = calibration_data[['gaze_angle_x', 'gaze_angle_y',]]
 calibration_data = calibration_data.mean()
 
+# Create a black image
+frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
+
+# Define the text and its properties
+text = "Calibration terminee"
+font = cv2.FONT_HERSHEY_SIMPLEX
+font_scale = 1
+color = (128, 128, 128)  # Grey color
+thickness = 2
+text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
+text_x = (frame.shape[1] - text_size[0]) // 2
+text_y = (frame.shape[0] + text_size[1]) // 2
+
+# Put the text on the image
+cv2.putText(frame, text, (text_x, text_y), font, font_scale, color, thickness)
+
+# Create a window and display the image
+cv2.namedWindow("Chez Gérard", cv2.WINDOW_NORMAL)
+cv2.setWindowProperty("Chez Gérard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
+cv2.imshow("Chez Gérard", frame)
+
+# Wait for 3 seconds
+cv2.waitKey(3000)
+
+# Close the window
+cv2.destroyAllWindows()
 
 
 while True :
@@ -96,12 +163,26 @@ while True :
         else:												# sinon
             couleur_centre_salon = [0, 50, 0]			# couleur de fond jaune
             couleur_texte_centre_salon = [128, 128, 128]	# texte gris moyen
+        # MAJ etat toilettes
+        if retour_etat_toilettes == 0:							# si eteinte
+            couleur_toilettes = [0, 0, 0]				# couleur de fond noir
+            couleur_texte_toilettes = [128, 128, 128]	# texte gris moyen
+        else:												# sinon
+            couleur_toilettes = [0, 50, 0]			# couleur de fond jaune
+            couleur_texte_toilettes = [128, 128, 128]	# texte gris moyen
+        # MAJ etat chambre
+        if retour_etat_chambre == 0:							# si eteinte
+            couleur_chambre = [0, 0, 0]				# couleur de fond noir
+            couleur_texte_chambre = [128, 128, 128]	# texte gris moyen
+        else:												# sinon
+            couleur_chambre = [0, 50, 0]			# couleur de fond jaune
+            couleur_texte_chambre = [128, 128, 128]	# texte gris moyen
 				# (0,0,0) noir / (50,50,50) gris fonce / (128,128,128) gris moyen / (200,200,200) gris clair / (255,255,255) blanc
 
 
     # traitement du regard
 	# si regard a gauche
-    if gaze_data['gaze_angle_x'].values[0] > 0.06:
+    if gaze_data['gaze_angle_x'].values[0] > 0.06 and gaze_data['gaze_angle_y'].values[0] < 0.06 and gaze_data['gaze_angle_y'].values[0] > -0.06:	# si regard a gauche
         RegardDroite = 0  					# RAZ RegardDroite
         RegardGauche = RegardGauche + 1		# incremente compteur
         # ~ print("Nb iterations regard gauche:", RegardGauche)		# affiche info dans terminal
@@ -117,7 +198,7 @@ while True :
             RegardGauche = 0				# RAZ compteur 
     
     # si regard a droite
-    elif gaze_data['gaze_angle_x'].values[0] < -0.06:				# si regard a droite
+    elif gaze_data['gaze_angle_x'].values[0] < -0.06 and gaze_data['gaze_angle_y'].values[0] < 0.06 and gaze_data['gaze_angle_y'].values[0] > -0.06:				# si regard a droite
         RegardGauche = 0					# RAZ RegardGauche
         RegardDroite = RegardDroite + 1		# incremente compteur
         # ~ print("Nb iterations regard droite:", RegardDroite)		# affiche info dans terminal
@@ -131,12 +212,46 @@ while True :
                 retour_etat_centre=0								# sinon
                 #commandeKNX.Centre_eteindre()	# eteint
             RegardDroite = 0					# RAZ compteur
+    
+    # si regard en haut
+    elif gaze_data['gaze_angle_x'].values[0] < 0.06 and gaze_data['gaze_angle_x'].values[0] > -0.06 and gaze_data['gaze_angle_y'].values[0] > 0.06:				# si regard en haut
+        RegardBas = 0					# RAZ RegardGauche
+        RegardHaut = RegardHaut + 1		# incremente compteur
+        # ~ print("Nb iterations regard Haut:", RegardHaut)		# affiche info dans terminal
+                               
+        # gestion envoi commande lampe centre salon en mode telerupteur   
+        if RegardHaut >= 17:					# il faut maintenir le regard pendant au moins 17 iterations
+            if retour_etat_toilettes == 0:			# si eteinte
+                retour_etat_toilettes=1
+                #commandeKNX.Centre_allumer()	# allume
+            else:
+                retour_etat_toilettes=0								# sinon
+                #commandeKNX.Centre_eteindre()	# eteint
+            RegardHaut = 0					# RAZ compteur
+    
+    # si regard en bas
+    elif gaze_data['gaze_angle_x'].values[0] < 0.06 and gaze_data['gaze_angle_x'].values[0] > -0.06 and gaze_data['gaze_angle_y'].values[0] < -0.06:				# si regard en bas
+        RegardHaut = 0					# RAZ RegardGauche
+        RegardBas = RegardBas + 1		# incremente compteur
+        # ~ print("Nb iterations regard Haut:", RegardHaut)		# affiche info dans terminal
+                               
+        # gestion envoi commande lampe centre salon en mode telerupteur   
+        if RegardBas >= 17:					# il faut maintenir le regard pendant au moins 17 iterations
+            if retour_etat_chambre == 0:			# si eteinte
+                retour_etat_chambre=1
+                #commandeKNX.Centre_allumer()	# allume
+            else:
+                retour_etat_chambre=0								# sinon
+                #commandeKNX.Centre_eteindre()	# eteint
+            RegardBas = 0					# RAZ compteur
 
     # si regard au centre         
-    elif gaze_data['gaze_angle_x'].values[0] < 0.06 and gaze_data['gaze_angle_x'].values[0] > -0.06:
+    elif gaze_data['gaze_angle_x'].values[0] < 0.06 and gaze_data['gaze_angle_x'].values[0] > -0.06 and gaze_data['gaze_angle_y'].values[0] < 0.06 and gaze_data['gaze_angle_y'].values[0] > -0.06:				# si regard au centre
         # ~ print("Regard au centre")
         RegardDroite = 0					# RAZ Regardroite
         RegardGauche = 0					# RAZ RegardGauche
+        RegardHaut = 0					# RAZ Regardhaut
+        RegardBas = 0					# RAZ Regardbas
 
 ############## AFFICHAGE ####################  
     frame = cv2.imread("2025-01-22-121530.jpg")
@@ -184,7 +299,7 @@ while True :
     cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
     # Ajouter couleur commande envoyee en haut
-    bordered_frame[:HauteurBandes, LargeurBandes:screen_width-LargeurBandes] = couleur_SAM		# Couleur SaM
+    bordered_frame[:HauteurBandes, LargeurBandes:screen_width-LargeurBandes] = couleur_toilettes		# Couleur SaM
 		#  [hauteur , largeur]
 		# : toutes les lignes
 		# :HauteurBandes       les colonnes depuis le début (:) jusqu'à HauteurBandes
@@ -193,12 +308,12 @@ while True :
     Position = (800,50)
     Police = cv2.FONT_HERSHEY_SIMPLEX
     TaillePolice = 1
-    CouleurTexte = couleur_texte_SAM
+    CouleurTexte = couleur_texte_toilettes
     EpaisseurTexte = 2
     cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
     # Ajouter couleur commande envoyee en bas
-    bordered_frame[-HauteurBandes:, LargeurBandes:screen_width-LargeurBandes] = couleur_SAM		# Couleur SaM
+    bordered_frame[-HauteurBandes:, LargeurBandes:screen_width-LargeurBandes] = couleur_chambre		# Couleur SaM
 		#  [hauteur , largeur]
 		# : toutes les lignes
 		# :HauteurBandes      les colonnes depuis la fin (:) en remontant de HauteurBandes
@@ -207,7 +322,7 @@ while True :
     Position = (800,1100)
     Police = cv2.FONT_HERSHEY_SIMPLEX
     TaillePolice = 1
-    CouleurTexte = couleur_texte_SAM
+    CouleurTexte = couleur_texte_chambre
     EpaisseurTexte = 2
     cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
