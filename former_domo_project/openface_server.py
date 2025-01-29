@@ -1,17 +1,17 @@
 from flask import Flask
-# import subprocess
-# import os
-# from werkzeug.utils import secure_filename
+import subprocess
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-# UPLOAD_FOLDER = './uploads'
-# RESULT_FOLDER = './results'
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# app.config['RESULT_FOLDER'] = RESULT_FOLDER
+UPLOAD_FOLDER = './uploads'
+RESULT_FOLDER = './results'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['RESULT_FOLDER'] = RESULT_FOLDER
 
-# # Ensure folders exist
-# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-# os.makedirs(RESULT_FOLDER, exist_ok=True)
+# Ensure folders exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(RESULT_FOLDER, exist_ok=True)
 
 # @app.route('/process', methods=['POST'])
 # def process_image():
@@ -45,20 +45,20 @@ app = Flask(__name__)
 #     else:
 #         return jsonify({'error': 'CSV file not generated'}), 500
     
-# @app.route('/test', methods=['POST'])
-# def test():
-#     #os.environ['TEST_VARIABLE'] = '42'
-#     try:
-#         result = subprocess.run([
-#             'pwd'
-#         ], capture_output=True, text=True, check=True)
-#         return jsonify({'pwd': result.stdout.strip()}), 200
-#     except subprocess.CalledProcessError as e:
-#         return jsonify({'error': 'Error during environment variable test', 'details': str(e)}), 500
+@app.route('/test', methods=['POST'])
+def test():
+    #os.environ['TEST_VARIABLE'] = '42'
+    try:
+        result = subprocess.run([
+            'pwd'
+        ], capture_output=True, text=True, check=True)
+        return jsonify({'pwd': result.stdout.strip()}), 200
+    except subprocess.CalledProcessError as e:
+        return jsonify({'error': 'Error during environment variable test', 'details': str(e)}), 500
 
 @app.route('/')
 def hello():
 	return "Hello World!"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8080, debug = True)
