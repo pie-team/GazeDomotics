@@ -16,21 +16,26 @@ RUN wget -q https://www.dropbox.com/s/7na5qsjzz8yfoer/cen_patches_0.25_of.dat &&
 ## This will be our base image for OpenFace, and also the base for the compiler
 ## image. We only need packages which are linked
 
-FROM ubuntu:18.04 as ubuntu_base
+FROM arm64v8/ubuntu:18.04 as ubuntu_base
 
 LABEL maintainer="Michael McDermott <mikemcdermott23@gmail.com>"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # todo: minimize this even more
-RUN apt-get update -qq &&\
-    apt-get install -qq curl &&\
+RUN apt-get update -qq  &&\
+    apt-get install -qq curl  &&\
     apt-get install -qq --no-install-recommends \
-        libopenblas-dev liblapack-dev \
-        libavcodec-dev libavformat-dev libswscale-dev \
-        libtbb2 libtbb-dev libjpeg-dev \
-        libpng-dev libtiff-dev &&\
-    rm -rf /var/lib/apt/lists/*
+    	libopenblas-dev liblapack-dev \
+    	libavcodec-dev libavformat-dev libswscale-dev \
+    	libtbb2 libtbb-dev libjpeg-dev \
+	libpng-dev libtiff-dev  &&\
+	rm -rfv /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y libopenblas-dev
+
+RUN echo OUI
+RUN ldconfig -p | grep openblas
 
 ## ==================== Build-time dependency libs ======================
 ## This will build and install opencv and dlib into an additional dummy
@@ -90,9 +95,37 @@ COPY ./ ./
 COPY --from=model_data /data/patch_experts/* \
     /root/openface/lib/local/LandmarkDetector/model/patch_experts/
 
+# RUN mkdir -p build && cd build && \
+#    CXX=g++-8 CC=gcc-8 cmake -D CMAKE_BUILD_TYPE=RELEASE -G Ninja .. && \
+#    ninja &&\
+#    DESTDIR=/root/diff ninja install
+
+#RUN mkdir -p build && cd build && \
+  #  CXX=g++-8 CC=gcc-8 cmake -D CMAKE_BUILD_TYPE=RELEASE \
+  #  -D OpenBLAS_INCLUDE_DIR=/usr/include \
+  #  -D OpenBLAS_LIB=/usr/lib/aarch64-linux-gnu/libopenblas.so \
+  #  -G Ninja .. && \
+  #  ninja && \
+ #   DESTDIR=/root/diff ninja install
+
+# RUN mkdir -p build && cd build && \
+#    CXX=g++-8 CC=gcc-8 cmake -D CMAKE_BUILD_TYPE=RELEASE \
+#    -D OpenBLAS_INCLUDE_DIR=/usr/include \
+#    -D OpenBLAS_LIB=/usr/lib/aarch64-linux-gnu/libopenblas.so \
+#    -D ENABLE_SSE=OFF \
+#    -D ENABLE_NEON=ON \
+#    -G Ninja .. && \
+#    ninja && \
+#    DESTDIR=/root/diff ninja install
+
 RUN mkdir -p build && cd build && \
-    cmake -D CMAKE_BUILD_TYPE=RELEASE -G Ninja .. && \
-    ninja &&\
+    CXX=g++-8 CC=gcc-8 cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D OpenBLAS_INCLUDE_DIR=/usr/include \
+    -D OpenBLAS_LIB=/usr/lib/aarch64-linux-gnu/libopenblas.so \
+    -G Ninja .. \
+    -DCMAKE_CXX_FLAGS="-march=armv8-a" \
+    -DCMAKE_C_FLAGS="-march=armv8-a" && \
+    ninja && \
     DESTDIR=/root/diff ninja install
 
 

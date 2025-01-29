@@ -14,11 +14,12 @@ services:
       context: .
       dockerfile: docker/Dockerfile
     image: "${DOCKERUSER}/openface:${DOCKERTAG}"
+    platform: linux/arm64/v8
     tty: true
     volumes:
-      - "${DATA_MOUNT}:${DATA_MOUNT}"
+      - ./data:/tmp/openface
     environment:
-      DATA_MOUNT: "${DATA_MOUNT}"
+      DATA_MOUNT: /tmp/openface
     command: ["bash"]
 
 ...
