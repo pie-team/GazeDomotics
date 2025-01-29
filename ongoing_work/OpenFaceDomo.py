@@ -33,7 +33,7 @@ EpaisseurTexte = 2
 Police = cv2.FONT_HERSHEY_SIMPLEX
 TaillePolice = 1
 frame_counter = 0
-delay = 10
+delay = 20
 
 
 
@@ -63,8 +63,6 @@ def Basic_Window_Displayer(height, width, title, text, text_color=(128,128,128),
     cv2.imshow(title, frame)
 
     cv2.waitKey(wait_time)
-
-    cv2.destroyAllWindows()
 
 
 def GazeIsRight(data, threshold):
@@ -105,6 +103,10 @@ if __name__ == "__main__":
     
     OpenFace = sp.Popen(['bash', './OpenFace_runner.sh'])
     
+    time.sleep(2)
+
+    cv2.destroyAllWindows()
+
     Basic_Window_Displayer(screen_height, screen_width, "Test", "+", blanc, 10000, "center")
 
     calibration_data = pd.read_csv("./Data_OpenFace/Test.csv")
@@ -251,8 +253,9 @@ if __name__ == "__main__":
         if cv2.waitKey(1) == 27:
             break
         
-cv2.destroyAllWindows() 
+    cv2.destroyAllWindows() 
 
+    sp.call(["kill", str(OpenFace.pid + 1)])
                 
 
 
