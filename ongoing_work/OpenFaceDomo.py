@@ -37,6 +37,7 @@ delay = 20
 
 
 
+
 def Basic_Window_Displayer(height, width, title, text, text_color=(128,128,128), wait_time=0, mode="center"):
 
     # Create a black image

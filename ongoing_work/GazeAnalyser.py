@@ -18,32 +18,34 @@ gaze_data = data[['gaze_angle_x', 'gaze_angle_y']]
 
 # Rolling mean to reduce noise
 if IsCalibrated == "True":
-    calibration_data = gaze_data
-    calibration_data = calibration_data[['gaze_angle_x', 'gaze_angle_y',]]
-    calibration_data = calibration_data.mean()
-    gaze_data['gaze_angle_x'] = gaze_data['gaze_angle_x'] - np.asarray([calibration_data['gaze_angle_x'] for i in range(gaze_data['gaze_angle_x'].shape[0])])
-    gaze_data['gaze_angle_y'] = gaze_data['gaze_angle_y'] - np.asarray([calibration_data['gaze_angle_y'] for i in range(gaze_data['gaze_angle_y'].shape[0])])
+    calibration_data = (gaze_data_timed[gaze_data_timed['timestamp']<10])[['gaze_angle_x', 'gaze_angle_y']]
+    calibration_values = calibration_data.mean()
+    gaze_data_calibrated = gaze_data - calibration_values
 else:
-    gaze_data = gaze_data[['gaze_angle_x', 'gaze_angle_y']]
+    gaze_data_calibrated = gaze_data[['gaze_angle_x', 'gaze_angle_y']]
 
 
-gaze_data = gaze_data.rolling(10).mean()
+gaze_data_calibrated.loc[:,:] = gaze_data_calibrated.rolling(10).mean()
 
+epochs_indexes = []
 times = np.array(gaze_data_timed['timestamp'].values[:])
 i = 0
+t = 0
 for time in times:
+    if float(time) >= t :
+        epochs_indexes.append(i)
+        t += 3
     times[i] = "{:.2f}".format(time)
     i += 1
 
-
 # Plot the gaze data and limits
 fig, ax = plt.subplots()
-plt.plot(gaze_data)
-ax.set_xticks(gaze_data_timed['frame'].values[:])
-ax.set_xticklabels(times, rotation=45)
+plt.plot(gaze_data_calibrated)
+ax.set_xticks([i for i in range(0, len(times), 25)])
+ax.set_xticklabels(times[::25], rotation=45)
 plt.legend(['gaze_angle_x', 'gaze_angle_y'])
 plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [-0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
 plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
 if mode == "LandR":
-    plt.vlines()
+    plt.vlines(epochs_indexes,-0.2,0.2)
 plt.show()
