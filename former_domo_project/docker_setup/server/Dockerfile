@@ -15,7 +15,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # the application crashes without emitting any logs due to buffering.
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR home/app
+WORKDIR app
 
 ##<<<<<< NE MARCHE PAS <<<<<<##
 # Create a non-privileged user that the app will run under.
@@ -30,7 +30,7 @@ WORKDIR home/app
 #     --uid "${UID}" \
 #     appuser
 ## >>>>>>>>>>> FIN >>>>>>>>>> ##
-COPY requirements.txt /home/app
+COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip3 install -r requirements.txt
 
@@ -38,9 +38,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Switch to the non-privileged user to run the application.
 # USER appuser
 
-COPY openface_server.py /home/app
+COPY openface_server.py .
 
-# EXPOSE 8080
+EXPOSE 8080
 
 ENTRYPOINT ["python3"]
 CMD ["openface_server.py"]
