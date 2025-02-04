@@ -1,0 +1,10 @@
+Input:./nathan_test.mp4
+Input full path:/mnt/c/Users/nathn/Documents/GazeDomotics/ongoing_work/nathan_test.mp4
+Camera parameters:629.167,629.167,400,304
+Output csv:Test.csv
+Gaze: 1
+AUs: 0
+Landmarks 2D: 0
+Landmarks 3D: 0
+Pose: 0
+Shape parameters: 0
