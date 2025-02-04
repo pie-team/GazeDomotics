@@ -20,13 +20,13 @@ screen_width, screen_height = 1920, 1200
 center_counter = 0
 right_counter = 0
 left_counter = 0
-# up_counter = 0
-# down_counter = 0
+up_counter = 0
+down_counter = 0
 retour_etat_centre = 0
 retour_etat_droite = 0
 retour_etat_gauche = 0
-# retour_etat_haut = 0
-# retour_etat_bas = 0
+retour_etat_haut = 0
+retour_etat_bas = 0
 noir = (0, 0, 0)
 blanc = (255, 255, 255)
 vert = (0, 255, 0)
@@ -41,7 +41,7 @@ delay = 12
 
 def GazeIsCenter(data, threshold):
 
-    if abs(data["gaze_angle_x"].values[0]) < threshold:
+    if abs(data["gaze_angle_x"].values[0]) < threshold and abs(data["gaze_angle_y"].values[0]) < threshold:
         return True
     else:
         return False
@@ -60,19 +60,19 @@ def GazeIsLeft(data, threshold):
     else:
         return False
 
-# def GazeIsUp(data, threshold):
+def GazeIsUp(data, threshold):
 
-#     if data["gaze_angle_y"].values[0] < -threshold:
-#         return True
-#     else:
-#         return False
+    if data["gaze_angle_y"].values[0] < -threshold:
+        return True
+    else:
+        return False
     
-# def GazeIsDown(data, threshold):
+def GazeIsDown(data, threshold):
 
-#     if data["gaze_angle_y"].values[0] > threshold:
-#         return True
-#     else:
-#         return False
+    if data["gaze_angle_y"].values[0] > threshold:
+        return True
+    else:
+        return False
 
 
 
@@ -102,6 +102,10 @@ if __name__ == "__main__":
 
         frame_counter += 1
 
+        # if frame_counter == 15:
+        #     ret = cv2.getWindowProperty("tracking result", cv2.WND_PROP_FULLSCREEN)
+        #     print("Fenetre fermee")
+
         last_action=current_action
 
         if last_action == "center":
@@ -110,6 +114,10 @@ if __name__ == "__main__":
             right_counter = 0
         if last_action == "left":
             left_counter = 0
+        if last_action == "up":
+            up_counter = 0
+        if last_action == "down":
+            down_counter = 0
 
         data = pd.read_csv("./Data_OpenFace/Test.csv")
         gaze_data = data[['gaze_angle_x', 'gaze_angle_y']]
@@ -120,6 +128,8 @@ if __name__ == "__main__":
             center_counter += 1
             right_counter = 0
             left_counter = 0
+            up_counter = 0
+            down_counter = 0
             if center_counter >= delay:
                 center_counter = 0
                 if retour_etat_centre == 0:
@@ -133,6 +143,8 @@ if __name__ == "__main__":
             center_counter = 0
             right_counter += 1
             left_counter = 0
+            up_counter = 0
+            down_counter = 0
             if right_counter >= delay:
                 right_counter = 0
                 if retour_etat_droite == 0:
@@ -146,6 +158,8 @@ if __name__ == "__main__":
             center_counter = 0
             right_counter = 0
             left_counter += 1
+            up_counter = 0
+            down_counter = 0
             if left_counter >= delay:
                 left_counter = 0
                 if retour_etat_gauche == 0:
@@ -155,23 +169,35 @@ if __name__ == "__main__":
                     retour_etat_gauche = 0
                     current_action = "left"
         
-        # if GazeIsUp(gaze_data, 0.1):
-        #     up_counter += 1
-        #     if up_counter >= delay:
-        #         up_counter = 0
-        #         if retour_etat_haut == 0:
-        #             retour_etat_haut = 1
-        #         else :
-        #             retour_etat_haut = 0
+        if GazeIsUp(gaze_data, 0.05):
+            center_counter = 0
+            right_counter = 0
+            left_counter = 0
+            up_counter += 1
+            down_counter = 0
+            if up_counter >= delay:
+                up_counter = 0
+                if retour_etat_haut == 0:
+                    retour_etat_haut = 1
+                    current_action = "up"
+                else :
+                    retour_etat_haut = 0
+                    current_action = "up"
         
-        # if GazeIsDown(gaze_data, 0.1):
-        #     down_counter += 1
-        #     if down_counter >= delay:
-        #         down_counter = 0
-        #         if retour_etat_bas == 0:
-        #             retour_etat_bas = 1
-        #         else :
-        #             retour_etat_bas = 0
+        if GazeIsDown(gaze_data, 0.05):
+            center_counter = 0
+            right_counter = 0
+            left_counter = 0
+            up_counter = 0
+            down_counter += 1
+            if down_counter >= delay:
+                down_counter = 0
+                if retour_etat_bas == 0:
+                    retour_etat_bas = 1
+                    current_action = "down"
+                else :
+                    retour_etat_bas = 0
+                    current_action = "down"
 
         if retour_etat_droite == 1:
             couleur_droite = vert
@@ -187,24 +213,19 @@ if __name__ == "__main__":
             couleur_gauche = noir
             couleur_texte_gauche = gris
         
-        # if retour_etat_haut == 1:
-        #     couleur_haut = vert
-        #     couleur_texte_haut = jaune
-        # else:
-        #     couleur_haut = noir
-        #     couleur_texte_haut = gris
+        if retour_etat_haut == 1:
+            couleur_haut = vert
+            couleur_texte_haut = jaune
+        else:
+            couleur_haut = noir
+            couleur_texte_haut = gris
         
-        # if retour_etat_bas == 1:
-        #     couleur_bas = vert
-        #     couleur_texte_bas = jaune
-        # else:
-        #     couleur_bas = noir
-        #     couleur_texte_bas = gris
-
-        couleur_haut = noir
-        couleur_texte_haut = gris
-        couleur_bas = noir
-        couleur_texte_bas = gris
+        if retour_etat_bas == 1:
+            couleur_bas = vert
+            couleur_texte_bas = jaune
+        else:
+            couleur_bas = noir
+            couleur_texte_bas = gris
             
 
         frame = cv2.imread("2025-01-22-121530.jpg")

@@ -12,8 +12,10 @@ import subprocess as sp
 import multiprocessing as mp
 import sys
 from Basic_Window_Displayer import Basic_Window_Displayer as bwd
+import pyautogui
 
 mode = sys.argv[1] # "center", "LandR", "UandD", "+"
+size = pyautogui.size()
 
 if __name__ == "__main__":
 
@@ -86,7 +88,7 @@ if __name__ == "__main__":
         bwd(1200, 1920, "GazeDomotics", "SLT", wait_time=3000)
         bwd(1200, 1920, "GazeDomotics", "CV?", wait_time=3000)
         bwd(1200, 1920, "GazeDomotics", "READY?", wait_time=3000)
-        bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(1900, 600))
+        bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(size[0]-20, size[1]-20))
         bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
         bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(1900, 20))
         bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)

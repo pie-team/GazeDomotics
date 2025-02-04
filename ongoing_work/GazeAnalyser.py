@@ -10,7 +10,7 @@ IsCalibrated = sys.argv[1]
 mode = sys.argv[2]
 
 # Load the data
-data = pd.read_csv("./Data_OpenFace/Test.csv")
+data = pd.read_csv("./Data_OpenFace/Test_complet_+.csv")
 
 # Get the gaze data
 gaze_data_timed = data[['gaze_angle_x', 'gaze_angle_y', "timestamp", "frame"]]
