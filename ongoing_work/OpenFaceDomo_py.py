@@ -11,12 +11,15 @@ from Commandes import Commande
 import subprocess as sp
 import multiprocessing as mp
 from Basic_Window_Displayer import Basic_Window_Displayer as bwd
+import picamera2
+import pyautogui
+import requests
 
 
 ### VARIABLES GLOBALES ###
 height_cam = 480
 width_cam = 640
-screen_width, screen_height = 1920, 1200
+screen_width, screen_height = pyautogui.size()
 center_counter = 0
 right_counter = 0
 left_counter = 0
@@ -36,7 +39,18 @@ EpaisseurTexte = 2
 Police = cv2.FONT_HERSHEY_SIMPLEX
 TaillePolice = 1
 frame_counter = 0
-delay = 12
+delay = 5
+
+
+def gaze(img):
+    url = "http://127.0.0.1:8000/upload-photo/"
+    ret, buffer = cv2.imencode('.jpg', img)
+    if not ret:
+        raise Exception("cv2.imencode failed")
+    frame = buffer.tobytes()
+    file = {'file': ('image.jpg', frame, "image/jpeg")}
+    r = requests.post(url, files=file)
+    return r.json()
 
 
 def GazeIsCenter(data, threshold):
@@ -80,31 +94,56 @@ def GazeIsDown(data, threshold):
 
 if __name__ == "__main__":
     
+    picam = picamera2.PiCamera()
+    picam.start()
+    
     bwd(screen_height, screen_width, "Test", "Regardez la croix qui va apparaitre", blanc, 3000, "center")
     
-    OpenFace = sp.Popen(['bash', './OpenFace_runner.sh'])
+    data_calib = {"gaze_angle_x": np.array([]), "gaze_angle_y": np.array([])}
+    start_time = time.time()
+
+    while time.time() - start_time < 10:
+
+        # Create a black image
+        frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
+
+        # Define the text and its properties
+        text = '+'
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1
+        text_color = blanc
+        thickness = 2
+        text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
     
-    time.sleep(2)
+        text_x = (frame.shape[1] - text_size[0]) // 2
+        text_y = (frame.shape[0] + text_size[1]) // 2
+
+        # Put the text on the image
+        cv2.putText(frame, text, (text_x, text_y), font, font_scale, text_color, thickness)
+
+        # Create a window and display the image
+        cv2.namedWindow("Calibration", cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty("Calibration", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
+        cv2.imshow("Calibration", frame)
+
+        cv2.waitKey(0)
+
+        img_to_process = picam.capture_array()
+        current_data = gaze(img_to_process)[0]
+
+        data_calib["gaze_angle_x"].append(current_data["gaze_angle_x"])
+        data_calib["gaze_angle_y"].append(current_data["gaze_angle_y"])
+    
 
     cv2.destroyAllWindows()
-
-    bwd(screen_height, screen_width, "Test", "+", blanc, 10000, "center")
-
-    calibration_data = pd.read_csv("./Data_OpenFace/Test.csv")
-    calibration_data = calibration_data[['gaze_angle_x', 'gaze_angle_y',]]
-    calibration_data = calibration_data.mean()
+    data_calib["gaze_angle_x"] = np.mean(data_calib["gaze_angle_x"])
+    data_calib["gaze_angle_y"] = np.mean(data_calib["gaze_angle_y"])
 
     bwd(screen_height, screen_width, "Test", "Calibration terminee", blanc, 3000, "center")
 
     current_action = "center"
 
     while True:
-
-        frame_counter += 1
-
-        # if frame_counter == 15:
-        #     ret = cv2.getWindowProperty("tracking result", cv2.WND_PROP_FULLSCREEN)
-        #     print("Fenetre fermee")
 
         last_action=current_action
 
@@ -119,10 +158,11 @@ if __name__ == "__main__":
         if last_action == "down":
             down_counter = 0
 
-        data = pd.read_csv("./Data_OpenFace/Test.csv")
-        gaze_data = data[['gaze_angle_x', 'gaze_angle_y']]
-        gaze_data = gaze_data.tail(1)
-        gaze_data = gaze_data - np.asarray([calibration_data['gaze_angle_x'], calibration_data['gaze_angle_y']])
+        img_to_process = picam.capture_array()
+
+        gaze_data = gaze(img_to_process)[0]
+        gaze_data["gaze_angle_x"] -= data_calib['gaze_angle_x']
+        gaze_data["gaze_angle_y"] -= data_calib['gaze_angle_y']
 
         if GazeIsCenter(gaze_data, 0.05):
             center_counter += 1
@@ -139,7 +179,7 @@ if __name__ == "__main__":
                     retour_etat_centre = 0
                     current_action = "center"
 
-        if GazeIsRight(gaze_data, 0.05):
+        elif GazeIsRight(gaze_data, 0.05):
             center_counter = 0
             right_counter += 1
             left_counter = 0
@@ -154,7 +194,7 @@ if __name__ == "__main__":
                     retour_etat_droite = 0
                     current_action = "right"
         
-        if GazeIsLeft(gaze_data, 0.05):
+        elif GazeIsLeft(gaze_data, 0.05):
             center_counter = 0
             right_counter = 0
             left_counter += 1
@@ -169,7 +209,7 @@ if __name__ == "__main__":
                     retour_etat_gauche = 0
                     current_action = "left"
         
-        if GazeIsUp(gaze_data, 0.05):
+        elif GazeIsUp(gaze_data, 0.05):
             center_counter = 0
             right_counter = 0
             left_counter = 0
@@ -184,7 +224,7 @@ if __name__ == "__main__":
                     retour_etat_haut = 0
                     current_action = "up"
         
-        if GazeIsDown(gaze_data, 0.05):
+        elif GazeIsDown(gaze_data, 0.05):
             center_counter = 0
             right_counter = 0
             left_counter = 0
@@ -228,7 +268,7 @@ if __name__ == "__main__":
             couleur_texte_bas = gris
             
 
-        frame = cv2.imread("2025-01-22-121530.jpg")
+        frame = np.zeros((height_cam, width_cam, 3), dtype=np.uint8)
         frame_redimensionnee = cv2.resize(frame, (screen_width, screen_height))
         # Create a window and display the image
         cv2.namedWindow("Chez Gerard", cv2.WINDOW_NORMAL)

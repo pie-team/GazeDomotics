@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 import time
 import numpy as np
 import pandas as pd
@@ -12,10 +11,8 @@ import subprocess as sp
 import multiprocessing as mp
 import sys
 from Basic_Window_Displayer import Basic_Window_Displayer as bwd
-import pyautogui
 
 mode = sys.argv[1] # "center", "LandR", "UandD", "+"
-size = pyautogui.size()
 
 if __name__ == "__main__":
 
