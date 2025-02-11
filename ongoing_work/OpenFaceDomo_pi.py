@@ -39,7 +39,7 @@ EpaisseurTexte = 2
 Police = cv2.FONT_HERSHEY_SIMPLEX
 TaillePolice = 1
 frame_counter = 0
-delay = 5
+delay = 2
 
 
 def gaze(img):
@@ -50,40 +50,43 @@ def gaze(img):
     frame = buffer.tobytes()
     file = {'file': ('image.jpg', frame, "image/jpeg")}
     r = requests.post(url, files=file)
-    return r.json()
+    df = r.json()[0]
+    for e in list(df.keys()) : 
+        df[e] = float(df[e])
+    return df
 
 
 def GazeIsCenter(data, threshold):
 
-    if abs(data["gaze_angle_x"].values[0]) < threshold and abs(data["gaze_angle_y"].values[0]) < threshold:
+    if abs(data["gaze_angle_x"]) < threshold and abs(data["gaze_angle_y"]) < threshold:
         return True
     else:
         return False
 
 def GazeIsRight(data, threshold):
 
-    if data["gaze_angle_x"].values[0] < -threshold:
+    if data["gaze_angle_x"] < -threshold:
         return True
     else:
         return False
 
 def GazeIsLeft(data, threshold):
 
-    if data["gaze_angle_x"].values[0] > threshold:
+    if data["gaze_angle_x"] > threshold:
         return True
     else:
         return False
 
 def GazeIsUp(data, threshold):
 
-    if data["gaze_angle_y"].values[0] < -threshold:
+    if data["gaze_angle_y"] < -threshold:
         return True
     else:
         return False
     
 def GazeIsDown(data, threshold):
 
-    if data["gaze_angle_y"].values[0] > threshold:
+    if data["gaze_angle_y"] > threshold:
         return True
     else:
         return False
@@ -94,16 +97,16 @@ def GazeIsDown(data, threshold):
 
 if __name__ == "__main__":
     
-    picam = picamera2.PiCamera()
+    picam = picamera2.Picamera2()
     picam.start()
     
     bwd(screen_height, screen_width, "Test", "Regardez la croix qui va apparaitre", blanc, 3000, "center")
     
-    data_calib = {"gaze_angle_x": np.array([]), "gaze_angle_y": np.array([])}
+    data_calib = {"gaze_angle_x": [], "gaze_angle_y": []}
     start_time = time.time()
-
+    
     while time.time() - start_time < 10:
-
+        
         # Create a black image
         frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
 
@@ -120,24 +123,25 @@ if __name__ == "__main__":
 
         # Put the text on the image
         cv2.putText(frame, text, (text_x, text_y), font, font_scale, text_color, thickness)
-
+        cv2.putText(frame, str(int(time.time() - start_time )), (text_x, text_y-250), font, font_scale, text_color, thickness)
         # Create a window and display the image
         cv2.namedWindow("Calibration", cv2.WINDOW_NORMAL)
         cv2.setWindowProperty("Calibration", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
         cv2.imshow("Calibration", frame)
 
-        cv2.waitKey(0)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
         img_to_process = picam.capture_array()
-        current_data = gaze(img_to_process)[0]
-
-        data_calib["gaze_angle_x"].append(current_data["gaze_angle_x"])
-        data_calib["gaze_angle_y"].append(current_data["gaze_angle_y"])
-    
+        current_data = gaze(img_to_process[:,:,:3])
+        print(current_data)
+        data_calib["gaze_angle_x"].append(float(current_data["gaze_angle_x"]))
+        data_calib["gaze_angle_y"].append(float(current_data["gaze_angle_y"]))
+        
 
     cv2.destroyAllWindows()
-    data_calib["gaze_angle_x"] = np.mean(data_calib["gaze_angle_x"])
-    data_calib["gaze_angle_y"] = np.mean(data_calib["gaze_angle_y"])
+    data_calib["gaze_angle_x"] = np.mean(np.array(data_calib["gaze_angle_x"]))
+    data_calib["gaze_angle_y"] = np.mean(np.array(data_calib["gaze_angle_y"]))
 
     bwd(screen_height, screen_width, "Test", "Calibration terminee", blanc, 3000, "center")
 
@@ -160,10 +164,12 @@ if __name__ == "__main__":
 
         img_to_process = picam.capture_array()
 
-        gaze_data = gaze(img_to_process)[0]
+        gaze_data = gaze(img_to_process[:,:,:3])
         gaze_data["gaze_angle_x"] -= data_calib['gaze_angle_x']
         gaze_data["gaze_angle_y"] -= data_calib['gaze_angle_y']
-
+        
+        print(gaze_data)
+        
         if GazeIsCenter(gaze_data, 0.05):
             center_counter += 1
             right_counter = 0
@@ -294,7 +300,7 @@ if __name__ == "__main__":
         text_size = cv2.getTextSize(Texte, Police, TaillePolice, EpaisseurTexte)[0]
         Position = ((LargeurBandes-text_size[0])//2, (screen_height+text_size[1])//2)
         cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
-    
+        cv2.putText(bordered_frame, str(int(time.time()-start_time)), (480,150), Police, TaillePolice, CouleurTexte, EpaisseurTexte)
         # Ajouter couleur commande envoyee a droite
         bordered_frame[HauteurBandes:screen_height-HauteurBandes, -LargeurBandes:] = couleur_droite
         Texte = "RIGHT"
@@ -320,7 +326,7 @@ if __name__ == "__main__":
         cv2.putText(bordered_frame, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
         # Copier le flux vidéo au centre de l'image
-        bordered_frame[HauteurBandes:HauteurBandes + height_cam, LargeurBandes:LargeurBandes + width_cam] = frame
+        bordered_frame[HauteurBandes:HauteurBandes + height_cam, LargeurBandes:LargeurBandes + width_cam] = img_to_process[:,:,:3]
         
         # Afficher l'image
         cv2.imshow("Chez Gerard", bordered_frame)  
@@ -332,8 +338,6 @@ if __name__ == "__main__":
             break
         
     cv2.destroyAllWindows() 
-
-    sp.call(["kill", str(OpenFace.pid + 1)])
                 
 
 
