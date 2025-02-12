@@ -9,24 +9,28 @@ services:
       - '8080:8080'
     environment:
       - FLASK_ENV=development  # Enables auto-reloading
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket
     develop:
       watch:
       # Monitors the following file and copies the changes in the container
         - action: sync
-          path: openface_server.py
+          path: server/openface_server.py
           target: /app/openface_server.py
     networks: 
       - backend
     depends_on:
         - openface
 
-
   openface:
-      image: algebr/openface:latest
-      volumes:
-        - images:/openface/images  # Mount local images folder
-        - output:/openface/output  # Mount output folder
-      networks:
+    image: algebr/openface:latest
+    container_name: openface_container
+    restart: always
+    tty: true # Keeps the container running
+    volumes:
+      - images:/home/openface-build/images  # Mount local images folder
+      - output:/home/openface-build/output  # Mount output folder
+    networks:
       - backend
 
 volumes:

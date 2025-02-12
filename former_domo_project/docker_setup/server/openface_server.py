@@ -1,17 +1,21 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import subprocess
 import os
 from werkzeug.utils import secure_filename
+import docker #import from_env, containers
 
 app = Flask(__name__)
-UPLOAD_FOLDER = '/openface/images'  # Mounted in Docker Compose
-RESULT_FOLDER = '/openface/output'  # Mounted in Docker Compose
+UPLOAD_FOLDER = '/home/openface-build'  # Mounted in Docker Compose
+RESULT_FOLDER = '/home/openface-build/output'  # Mounted in Docker Compose
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['RESULT_FOLDER'] = RESULT_FOLDER
 
 # Ensure folders exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
+
+# Initialize Docker client
+client = docker.from_env()
 
 @app.route('/process', methods=['POST'])
 def process_image():
@@ -27,33 +31,52 @@ def process_image():
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(file_path)
 
-    # Run OpenFace
-    output_csv = os.path.join(app.config['RESULT_FOLDER'], filename.replace('.jpeg', '.csv'))
+    # Run OpenFace in the OpenFace container
+    output_csv = os.path.join(app.config['RESULT_FOLDER'], 'test.csv')#filename.replace('.jpeg', '.csv'))
     try:
-        subprocess.run([
+        exec_result = client.containers.get('openface_container').exec_run([
             'build/bin/FaceLandmarkImg',
-            '-f', file_path,
             '-gaze',
+            '-f', file_path,    
             '-of', output_csv  # Output CSV file
-        ], check=True)
-    except subprocess.CalledProcessError as e:
+        ])
+        if exec_result.exit_code != 0:
+            raise Exception(exec_result.output.decode('utf-8'))
+    except Exception as e:
         return jsonify({'error': 'Error during OpenFace processing', 'details': str(e)}), 500
 
+    # Copy the output CSV file to the host's output directory
+    host_output_csv = os.path.join('/Users/Louis/git/GazeDomotics/former_domo_project/docker_setup/server/output', filename.replace('.jpeg', '.csv'))
+    try:
+        subprocess.run(['cp', output_csv, host_output_csv], check=True)
+    except subprocess.CalledProcessError as e:
+        return jsonify({'error': 'Error copying CSV file to host directory', 'details': str(e)}), 500
+
+    return jsonify({'csv_path': host_output_csv}), 200
+ 
+
+    output_csv = '/home/openface-build/output/test.csv'
     # Return the CSV file path
     if os.path.exists(output_csv):
         return jsonify({'csv_path': output_csv}), 200
     else:
         return jsonify({'error': 'CSV file not generated'}), 500
-    
-@app.route('/test')
-def test():
-    #os.environ['TEST_VARIABLE'] = '42'
+
+    # Copy the output CSV file to the host's output directory
+    host_output_csv = os.path.join('/Users/Louis/git/GazeDomotics/former_domo_project/docker_setup/server/output', filename.replace('.jpeg', '.csv'))
     try:
-        result = subprocess.run([
-            'pwd'
-        ], capture_output=True, text=True, check=True)
-        return jsonify({'pwd': result.stdout.strip()}), 200
+        subprocess.run(['cp', output_csv, host_output_csv], check=True)
     except subprocess.CalledProcessError as e:
+        return jsonify({'error': 'Error copying CSV file to host directory', 'details': str(e)}), 500
+
+    return jsonify({'csv_path': host_output_csv}), 200
+ 
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+    try:
+        exec_result = client.containers.get('openface_container').exec_run(['ls', '/'])
+        return ('Result:\n' + exec_result.output.decode('utf-8').strip() + '\n'), 200
+    except Exception as e:
         return jsonify({'error': 'Error during environment variable test', 'details': str(e)}), 500
 
 @app.route('/')
