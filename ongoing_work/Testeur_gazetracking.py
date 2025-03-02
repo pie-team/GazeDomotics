@@ -17,6 +17,9 @@ import argparse
 from Commandes import Commande
 import subprocess
 from matplotlib import pyplot as plt
+from Basic_Window_Displayer import Basic_Window_Displayer as bwd
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 # Arguments
 parser=argparse.ArgumentParser()
@@ -49,7 +52,7 @@ liste_temps=[]              # pour enregistrement de t
 
 ratio_horizontal = 0.0
 erreur_relative = 0.0
-periode=5.00 #en secondes
+periode=1.00 #en secondes
 
 #FPS=1000000/40000=25
 webcam=cv2.VideoCapture(0)
@@ -239,6 +242,46 @@ while True:
 
         if t>5*periode:
             break
+    
+    if args.mode == "LandR":
+        if t<3*periode:
+            bwd(1200, 1920, "GazeDomotics", "HEY", wait_time=1)
+        if t<6*periode and t>=3*periode:
+            bwd(1200, 1920, "GazeDomotics", "SLT", wait_time=1)
+        if t<9*periode and t>=6*periode:
+            bwd(1200, 1920, "GazeDomotics", "CV?", wait_time=1)
+        if t<12*periode and t>=9*periode:
+            bwd(1200, 1920, "GazeDomotics", "READY?", wait_time=1)
+        if t<15*periode and t>=12*periode:
+            bwd(1200, 1920, "GazeDomotics", "DROITE A FOND >>", wait_time=1)
+        if t<18*periode and t>=15*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<21*periode and t>=18*periode:
+            bwd(1200, 1920, "GazeDomotics", "<< GAUCHE A FOND", wait_time=1)
+        if t<24*periode and t>=21*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<27*periode and t>=24*periode:
+            bwd(1200, 1920, "GazeDomotics", "DROITE A FOND >>", wait_time=1)
+        if t<30*periode and t>=27*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<33*periode and t>=30*periode:
+            bwd(1200, 1920, "GazeDomotics", "<< GAUCHE A FOND", wait_time=1)
+        if t<36*periode and t>=33*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<39*periode and t>=36*periode:
+            bwd(1200, 1920, "GazeDomotics", "DROITE A FOND >>", wait_time=1)
+        if t<42*periode and t>=39*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<45*periode and t>=42*periode:
+            bwd(1200, 1920, "GazeDomotics", "<< GAUCHE A FOND", wait_time=1)
+        if t<48*periode and t>=45*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<51*periode and t>=48*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<54*periode and t>=51*periode:
+            bwd(1200, 1920, "GazeDomotics", "FIN", wait_time=1)
+        if t>=57*periode:
+            break
 
     if args.video=='yes':
 
@@ -286,10 +329,10 @@ cv2.destroyAllWindows()		# Liberation memoire
 
 # Affichage des courbes
 
-if args.ratio=='h' or args.ratio=='hv':
-    plt.plot(liste_temps, liste_horizontal_ratio, label='horizontal ratio')
-if args.ratio=='v' or args.ratio=='hv':
-    plt.plot(liste_temps, liste_vertical_ratio, label='vertical ratio')
+# if args.ratio=='h' or args.ratio=='hv':
+#     plt.plot(liste_temps, liste_horizontal_ratio, label='horizontal ratio')
+# if args.ratio=='v' or args.ratio=='hv':
+#     plt.plot(liste_temps, liste_vertical_ratio, label='vertical ratio')
 if args.mode=='h':
     plt.axvline(marker_g, color='r', label='regard à gauche' )
     plt.axvline(marker_d, color='b', label="regard à droite" )
@@ -298,9 +341,15 @@ if args.mode=='hv':
     plt.axvline(marker_bg, color='b', label='bas gauche')
     plt.axvline(marker_bd, color='cyan', label='bas droit')
     plt.axvline(marker_hd, color='g', label='haut droit')
+if args.mode=="LandR":
+    liste_horizontal_ratio = StandardScaler().fit_transform(np.array(liste_horizontal_ratio).reshape(-1, 1)).reshape(-1)
+    liste_vertical_ratio = StandardScaler().fit_transform(np.array(liste_vertical_ratio).reshape(-1, 1)).reshape(-1)
+    liste_horizontal_ratio = pd.Series(liste_horizontal_ratio).rolling(10).mean()
+    liste_vertical_ratio = pd.Series(liste_vertical_ratio).rolling(10).mean()
+    plt.plot(liste_temps, liste_horizontal_ratio, label='horizontal ratio')
+    # plt.plot(liste_temps, liste_vertical_ratio, label='vertical ratio')
 
 plt.xlabel('time')
-plt.ylim(0,1)
 plt.legend()
 
 

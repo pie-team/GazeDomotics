@@ -5,12 +5,13 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import sys
+from sklearn.preprocessing import StandardScaler
 
 IsCalibrated = sys.argv[1]
 mode = sys.argv[2]
 
 # Load the data
-data = pd.read_csv("./Data_OpenFace/Test_complet_+.csv")
+data = pd.read_csv("./Data_OpenFace/Test.csv")
 
 # Get the gaze data
 gaze_data_timed = data[['gaze_angle_x', 'gaze_angle_y', "timestamp", "frame"]]
@@ -40,14 +41,16 @@ for time in times:
 
 if mode == "LandR":
     # Plot the gaze data and limits
+    values = gaze_data_calibrated['gaze_angle_x'].values
+    values = StandardScaler().fit_transform(values.reshape(-1, 1)).reshape(-1)
     fig, ax = plt.subplots()
-    plt.plot(gaze_data_calibrated['gaze_angle_x'])
+    plt.plot(values)
     ax.set_xticks([i for i in range(0, len(times), 25)])
     ax.set_xticklabels(times[::25], rotation=45)
     plt.legend(['gaze_angle_x'])
-    plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [-0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
-    plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
-    plt.vlines(epochs_indexes,-0.2,0.2)
+    # plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [-0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
+    # plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
+    # plt.vlines(epochs_indexes,-0.2,0.2)
     plt.show()
 
 else :

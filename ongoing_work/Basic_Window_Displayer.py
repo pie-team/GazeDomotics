@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def Basic_Window_Displayer(height, width, title, text, text_color=(128,128,128), wait_time=0, mode="center", location=(0,0)):
+def Basic_Window_Displayer(height, width, title, text, text_color=(128,128,128), wait_time=0, mode="center", location=(0,0), fullscreen=True):
 
     # Create a black image
     frame = np.zeros((height, width, 3), dtype=np.uint8)
@@ -27,7 +27,8 @@ def Basic_Window_Displayer(height, width, title, text, text_color=(128,128,128),
 
     # Create a window and display the image
     cv2.namedWindow(title, cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty(title, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
+    if fullscreen:
+        cv2.setWindowProperty(title, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
     cv2.imshow(title, frame)
 
     cv2.waitKey(wait_time)
