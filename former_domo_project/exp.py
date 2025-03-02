@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
+
 # mode telerupteur
 # a droite lampe centre salon
 # a gauche lampe salle a manger
 
 
 import cv2
-import keyboard
+# import keyboard
 from gaze_tracking import GazeTracking
 import time
 import numpy as np
 import argparse
 #from openpyxl import Workbook
 #import pandas as pd
-import pyautogui
+# import pyautogui
 from Commandes import Commande
 import subprocess
 from matplotlib import pyplot as plt
@@ -66,7 +68,7 @@ PeriodeRafraichissementInterface = 15		# PeriodeRafraichissementInterface = 1/FP
 gaze = GazeTracking()		# cree  objet gaze
 
 ############## AFFICHAGE ####################   
-screen_width, screen_height = pyautogui.size()				# relever les dimensions de l'écran
+screen_width, screen_height = 1920, 1200 # pyautogui.size()				# relever les dimensions de l'écran
 window_height = 2*HF											# definir la hauteur de la fenêtre 
 # ~ cv2.namedWindow("Chez Gérard", cv2.WND_PROP_FULLSCREEN)		# cree une fenetre
 cv2.namedWindow("Test", cv2.WINDOW_NORMAL)				# cree une fenetre redimensionnable
@@ -276,8 +278,8 @@ while True:
     # Quitter    
     if cv2.waitKey(1) == 27:
         break
-    if keyboard.is_pressed("q"):
-        break
+    # if keyboard.is_pressed("q"):
+    #     break
    
 webcam.release()			# Liberation camera
 cv2.destroyAllWindows()		# Liberation memoire
