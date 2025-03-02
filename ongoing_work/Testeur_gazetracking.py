@@ -283,6 +283,127 @@ while True:
         if t>=57*periode:
             break
 
+
+    if args.mode == "UandD":
+        if t<3*periode:
+            bwd(1200, 1920, "GazeDomotics", "HEY", wait_time=1)
+        if t<6*periode and t>=3*periode:
+            bwd(1200, 1920, "GazeDomotics", "SLT", wait_time=1)
+        if t<9*periode and t>=6*periode:
+            bwd(1200, 1920, "GazeDomotics", "CV?", wait_time=1)
+        if t<12*periode and t>=9*periode:
+            bwd(1200, 1920, "GazeDomotics", "READY?", wait_time=1)
+        if t<15*periode and t>=12*periode:
+            bwd(1200, 1920, "GazeDomotics", "HAUT A FOND", wait_time=1)
+        if t<18*periode and t>=15*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<21*periode and t>=18*periode:
+            bwd(1200, 1920, "GazeDomotics", "BAS A FOND", wait_time=1)
+        if t<24*periode and t>=21*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<27*periode and t>=24*periode:
+            bwd(1200, 1920, "GazeDomotics", "HAUT A FOND", wait_time=1)
+        if t<30*periode and t>=27*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<33*periode and t>=30*periode:
+            bwd(1200, 1920, "GazeDomotics", "BAS A FOND", wait_time=1)
+        if t<36*periode and t>=33*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<39*periode and t>=36*periode:
+            bwd(1200, 1920, "GazeDomotics", "HAUT A FOND", wait_time=1)
+        if t<42*periode and t>=39*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<45*periode and t>=42*periode:
+            bwd(1200, 1920, "GazeDomotics", "BAS A FOND", wait_time=1)
+        if t<48*periode and t>=45*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<51*periode and t>=48*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<54*periode and t>=51*periode:
+            bwd(1200, 1920, "GazeDomotics", "FIN", wait_time=1)
+        if t>=57*periode:
+            break
+
+    if args.mode == "+":
+        if t<3*periode:
+            bwd(1200, 1920, "GazeDomotics", "HEY", wait_time=1)
+        if t<6*periode and t>=3*periode:
+            bwd(1200, 1920, "GazeDomotics", "SLT", wait_time=1)
+        if t<9*periode and t>=6*periode:
+            bwd(1200, 1920, "GazeDomotics", "CV?", wait_time=1)
+        if t<12*periode and t>=9*periode:
+            bwd(1200, 1920, "GazeDomotics", "READY?", wait_time=1)
+        if t<15*periode and t>=12*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(1900, 600))
+        if t<18*periode and t>=15*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<21*periode and t>=18*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(1900, 20))
+        if t<24*periode and t>=21*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<27*periode and t>=24*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(960, 20))
+        if t<30*periode and t>=27*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<33*periode and t>=30*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(20, 20))
+        if t<36*periode and t>=33*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<39*periode and t>=36*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(20, 600))
+        if t<42*periode and t>=39*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<45*periode and t>=42*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(20, 1180))
+        if t<48*periode and t>=45*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<51*periode and t>=48*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(960, 1180))
+        if t<54*periode and t>=51*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=1)
+        if t<57*periode and t>=54*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(1900, 1180))
+        if t<60*periode and t>=57*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<63*periode and t>=60*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(1900, 600))
+        if t<66*periode and t>=63*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<69*periode and t>=66*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(1900, 20))
+        if t<72*periode and t>=69*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<75*periode and t>=72*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(960, 20))
+        if t<78*periode and t>=75*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<81*periode and t>=78*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(20, 20))
+        if t<84*periode and t>=81*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<87*periode and t>=84*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(20, 600))
+        if t<90*periode and t>=87*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<93*periode and t>=90*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(20, 1180))
+        if t<96*periode and t>=93*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<99*periode and t>=96*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(960, 1180))
+        if t<102*periode and t>=99*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<105*periode and t>=102*periode:
+            bwd(1200, 1920, "GazeDomotics", "+", wait_time=3000, mode="location", location=(1900, 1180))
+        if t<108*periode and t>=105*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<111*periode and t>=108*periode:
+            bwd(1200, 1920, "GazeDomotics", "| CENTRE |", wait_time=3000)
+        if t<114*periode and t>=111*periode:
+            bwd(1200, 1920, "GazeDomotics", "FIN", wait_time=3000)
+        if t>=114*periode:
+            break
+
     if args.video=='yes':
 
         # Copier le flux vidéo au centre de l'image
@@ -348,6 +469,20 @@ if args.mode=="LandR":
     liste_vertical_ratio = pd.Series(liste_vertical_ratio).rolling(10).mean()
     plt.plot(liste_temps, liste_horizontal_ratio, label='horizontal ratio')
     # plt.plot(liste_temps, liste_vertical_ratio, label='vertical ratio')
+if args.mode=="UandD":
+    liste_horizontal_ratio = StandardScaler().fit_transform(np.array(liste_horizontal_ratio).reshape(-1, 1)).reshape(-1)
+    liste_vertical_ratio = StandardScaler().fit_transform(np.array(liste_vertical_ratio).reshape(-1, 1)).reshape(-1)
+    liste_horizontal_ratio = pd.Series(liste_horizontal_ratio).rolling(10).mean()
+    liste_vertical_ratio = pd.Series(liste_vertical_ratio).rolling(10).mean()
+    # plt.plot(liste_temps, liste_horizontal_ratio, label='vertical ratio')
+    plt.plot(liste_temps, liste_vertical_ratio, label='vertical ratio')
+if args.mode=="+":
+    liste_horizontal_ratio = StandardScaler().fit_transform(np.array(liste_horizontal_ratio).reshape(-1, 1)).reshape(-1)
+    liste_vertical_ratio = StandardScaler().fit_transform(np.array(liste_vertical_ratio).reshape(-1, 1)).reshape(-1)
+    liste_horizontal_ratio = pd.Series(liste_horizontal_ratio).rolling(10).mean()
+    liste_vertical_ratio = pd.Series(liste_vertical_ratio).rolling(10).mean()
+    plt.plot(liste_temps, liste_horizontal_ratio, label='horizontal ratio')
+    plt.plot(liste_temps, liste_vertical_ratio, label='vertical ratio')
 
 plt.xlabel('time')
 plt.legend()

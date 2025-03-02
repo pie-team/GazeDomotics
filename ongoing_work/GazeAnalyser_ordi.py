@@ -53,14 +53,30 @@ if mode == "LandR":
     # plt.vlines(epochs_indexes,-0.2,0.2)
     plt.show()
 
-else :
+if mode == "UandD":
     # Plot the gaze data and limits
+    values = gaze_data_calibrated['gaze_angle_y'].values
+    values = StandardScaler().fit_transform(values.reshape(-1, 1)).reshape(-1)
+    fig, ax = plt.subplots()
+    plt.plot(values)
+    ax.set_xticks([i for i in range(0, len(times), 25)])
+    ax.set_xticklabels(times[::25], rotation=45)
+    plt.legend(['gaze_angle_y'])
+    # plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [-0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
+    # plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
+    # plt.vlines(epochs_indexes,-0.2,0.2)
+    plt.show()
+
+if mode == "+":
+    # Plot the gaze data and limits
+    array = gaze_data_calibrated.values
+    gaze_data_calibrated = StandardScaler().fit_transform(array)
     fig, ax = plt.subplots()
     plt.plot(gaze_data_calibrated)
     ax.set_xticks([i for i in range(0, len(times), 25)])
     ax.set_xticklabels(times[::25], rotation=45)
     plt.legend(['gaze_angle_x', 'gaze_angle_y'])
-    plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [-0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
-    plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
-    plt.vlines(epochs_indexes,-0.2,0.2)
+    # plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [-0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
+    # plt.plot([i for i in range(gaze_data['gaze_angle_x'].shape[0])], [0.05 for i in range(gaze_data['gaze_angle_x'].shape[0])], 'r')
+    # plt.vlines(epochs_indexes,-0.2,0.2)
     plt.show()
