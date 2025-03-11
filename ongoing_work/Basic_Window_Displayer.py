@@ -29,6 +29,8 @@ def Basic_Window_Displayer(height, width, title, text, text_color=(128,128,128),
     cv2.namedWindow(title, cv2.WINDOW_NORMAL)
     if fullscreen:
         cv2.setWindowProperty(title, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)  # passe en plein ecran
+    else:
+        cv2.setWindowProperty(title, cv2.WINDOW_NORMAL, cv2.WINDOW_NORMAL)  # passe en plein ecran
     cv2.imshow(title, frame)
 
     cv2.waitKey(wait_time)

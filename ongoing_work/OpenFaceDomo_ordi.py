@@ -18,7 +18,7 @@ from Basic_Window_Displayer import Basic_Window_Displayer as bwd
 ### VARIABLES GLOBALES ###
 height_cam = 480
 width_cam = 640
-screen_width, screen_height = 1920, 1200
+screen_width, screen_height = 1680, 1050
 center_counter = 0
 right_counter = 0
 left_counter = 0
@@ -38,7 +38,7 @@ EpaisseurTexte = 2
 Police = cv2.FONT_HERSHEY_SIMPLEX
 TaillePolice = 1
 frame_counter = 0
-delay = 12
+delay = 4 
 
 
 def GazeIsCenter(data, threshold):

@@ -1,0 +1,1 @@
+../EyeTrackingModels/OpenFace/build/bin/FeatureExtraction -f "/home/ngouget/Téléchargements/test.mp4" -gaze -out_dir ./Data_OpenFace -of Test_vid.csv
