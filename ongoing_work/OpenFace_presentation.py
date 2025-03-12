@@ -40,8 +40,8 @@ EpaisseurTexte = 2
 Police = cv2.FONT_HERSHEY_SIMPLEX
 TaillePolice = 1
 frame_counter = 0
-delay = 8
-seuil = 0.06
+delay = 6
+seuil = 0.05
 
 
 def GazeIsCenter(data, threshold):
@@ -157,12 +157,12 @@ if __name__ == "__main__":
                 if retour_etat_droite == 0:
                     retour_etat_droite = 1
                     current_action = "right"
-                    requests.get("http://192.168.182.211:5000/change?direction=next")
+                    requests.get("http://172.20.10.3:5000/change?direction=next")
                     # pynput.keyboard.Controller().tap(pynput.keyboard.Key.right)
                 else :
                     retour_etat_droite = 0
                     current_action = "right"
-                    requests.get("http://192.168.182.211:5000/change?direction=next")
+                    requests.get("http://172.20.10.3:5000/change?direction=next")
                     # pynput.keyboard.Controller().tap(pynput.keyboard.Key.right)
         
         if GazeIsLeft(gaze_data, seuil):
@@ -176,12 +176,12 @@ if __name__ == "__main__":
                 if retour_etat_gauche == 0:
                     retour_etat_gauche = 1
                     current_action = "left"
-                    requests.get("http://192.168.182.211:5000/change?direction=previous")
+                    requests.get("http://172.20.10.3:5000/change?direction=previous")
                     # pynput.keyboard.Controller().tap(pynput.keyboard.Key.left)
                 else :
                     retour_etat_gauche = 0
                     current_action = "left"
-                    requests.get("http://192.168.182.211:5000/change?direction=previous")
+                    requests.get("http://172.20.10.3:5000/change?direction=previous")
                     # pynput.keyboard.Controller().tap(pynput.keyboard.Key.left)
         
         # if GazeIsUp(gaze_data, 0.05):
@@ -243,12 +243,12 @@ if __name__ == "__main__":
         #     couleur_texte_bas = gris
             
 
-        # frame = np.zeros((height_cam, width_cam, 3), dtype=np.uint8)
-        # frame_redimensionnee = cv2.resize(frame, (screen_width, screen_height))
-        # # Create a window and display the image
-        # cv2.namedWindow("Chez Gerard", cv2.WINDOW_NORMAL)
-        # cv2.setWindowProperty("Chez Gerard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)  # passe en plein ecran
-        # cv2.imshow("Chez Gerard", frame_redimensionnee)
+        frame = np.zeros((height_cam, width_cam, 3), dtype=np.uint8)
+        frame_redimensionnee = cv2.resize(frame, (screen_width, screen_height))
+        # Create a window and display the image
+        cv2.namedWindow("Chez Gerard", cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty("Chez Gerard", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)  # passe en plein ecran
+        cv2.imshow("Chez Gerard", frame_redimensionnee)
 
         # ### Définir la place dispo pour les bandes
         # WDispo = screen_width - width_cam
@@ -261,6 +261,12 @@ if __name__ == "__main__":
 
         # # Initialisation
         # bordered_frame = np.zeros((screen_height, screen_width, 3), dtype=np.uint8)
+
+        Texte = last_action
+        CouleurTexte = blanc
+        text_size = cv2.getTextSize(Texte, Police, TaillePolice, EpaisseurTexte)[0]
+        Position = ((screen_width-text_size[0])//2, (screen_height+text_size[1])//2)
+        cv2.putText(frame_redimensionnee, Texte, Position, Police, TaillePolice, CouleurTexte, EpaisseurTexte)
 
         # # Ajouter couleur commande envoyee a gauche
         # bordered_frame[HauteurBandes:screen_height-HauteurBandes, :LargeurBandes] = couleur_gauche
@@ -297,8 +303,8 @@ if __name__ == "__main__":
         # # Copier le flux vidéo au centre de l'image
         # bordered_frame[HauteurBandes:HauteurBandes + height_cam, LargeurBandes:LargeurBandes + width_cam] = frame
         
-        # # Afficher l'image
-        # cv2.imshow("Chez Gerard", bordered_frame)  
+        # Afficher l'image
+        cv2.imshow("Chez Gerard", frame_redimensionnee)  
 
         # ############## AFFICHAGE ####################         
             
